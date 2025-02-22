@@ -9,74 +9,65 @@ require('dotenv').config();
 // Register User Function
 const register = async (req, res) => {
     try {
-        const { name, phone, email, password, sponsor } = req.body;
+        const { fullname, lastname, selectedDate, email, password, referralCode } = req.body;
         
-        if (!name || !phone || !email || !password || !sponsor) {
+        if (!fullname || !lastname || !selectedDate || !email || !password || !referralCode) {
+            // console.log('3');
             return res.status(400).json({ error: "All fields are required!" });
         }
 
         // Check if user already exists
-        const [existingUser] = await db.execute(
-            "SELECT * FROM users WHERE email = ? OR phone = ?", [email, phone]
-        );
-        
-        if (existingUser.length > 0) {
-            return res.status(400).json({ error: "Email or Phone already exists!" });
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            // console.log('2');
+            return res.status(400).json({ error: "Email already exists!" });
         }
 
         // Check if sponsor exists
-        const [sponsorUser] = await db.execute(
-            "SELECT * FROM users WHERE username = ?", [sponsor]
-        );
-        if (sponsorUser.length === 0) {
+        const sponsorUser = await User.findOne({ where: { username: referralCode } });
+        if (!sponsorUser) {
+            // console.log('1');
             return res.status(400).json({ error: "Sponsor does not exist!" });
         }
 
         // Generate username & transaction password
-        const username = Math.random().toString(36).substring(2, 10);
-        const tpassword = Math.random().toString(36).substring(2, 8);
+        const username = Math.floor(10000000 + Math.random() * 90000000);        
+         const tpassword = Math.floor(10000+ Math.random() * 90000); 
 
         // Hash passwords
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const hashedTPassword = await bcrypt.hash(tpassword, 10);
+        const hashedPassword = await bcrypt.hash(password.toString(), 10);
+        const hashedTPassword = await bcrypt.hash(tpassword.toString(), 10);
 
-        // Get parent ID
-        const [lastUser] = await db.execute("SELECT id FROM users ORDER BY id DESC LIMIT 1");
-        const parentId = lastUser.length > 0 ? lastUser[0].id : null;
+        // Get last user for ParentId (assuming ParentId is determined this way)
+        const lastUser = await User.findOne({ order: [['id', 'DESC']] });
+        const parentId = lastUser ? lastUser.id : null;
 
-        // Provide a default for sponsor level if it's undefined or null
-        const sponsorLevel = (sponsorUser[0].level !== undefined && sponsorUser[0].level !== null)
-            ? sponsorUser[0].level
-            : 0;
+        // Set sponsor level
+        const sponsorLevel = sponsorUser.level ? sponsorUser.level : 0;
 
-        // Construct new user object
-        const newUser = {
-            name,
-            phone,
-            email,
+        // Create new user
+        const newUser = await User.create({
+            fullname:fullname,
+            lastname:lastname,
+            date_of_birth: selectedDate,
+            email:email,
             username,
             password: hashedPassword,
             tpassword: hashedTPassword,
             PSR: password,
             TPSR: tpassword,
-            sponsor: sponsorUser[0].id,
-            level: sponsorLevel + 1,  // Default to 0 if sponsor level is not defined, then add 1
-            ParentId: parentId
-        };
-
-        // Optional: Log newUser for debugging (avoid logging sensitive info in production)
-        console.log("New User Data:", newUser);
-
-        // Insert new user into the database
-        await db.execute("INSERT INTO users SET ?", newUser);
-
-        return res.status(201).json({ message: "User registered successfully!", username });
-
+            sponsor: sponsorUser.id,
+            level: sponsorLevel + 1,
+            ParentId: parentId,
+        });
+    // console.log(newUser);
+        return res.status(201).json({status:true ,message: "User registered successfully!", username: newUser.username });
     } catch (error) {
         console.error("Error:", error.message);
         return res.status(500).json({ error: "Server error", details: error.message });
     }
 };
+
 
 
 

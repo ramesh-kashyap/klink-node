@@ -13,7 +13,7 @@ const initWebRouter = require("./routes/web");
 
 // Initialize Express App
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 5001;
 
 // Security Middleware
 app.use(helmet());
