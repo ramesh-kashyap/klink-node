@@ -13,12 +13,12 @@ const initWebRouter = require("./routes/web");
 
 // Initialize Express App
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 5001;
 
 // Security Middleware
 app.use(helmet());
 app.use(cors({
-    origin: "https://17ed-2405-201-5802-909b-5512-fc3d-9b90-957b.ngrok-free.app", // Adjust as needed
+    origin: "http://localhost:3000", // Adjust as needed
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
