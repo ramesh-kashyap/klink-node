@@ -60,7 +60,8 @@ const register = async (req, res) => {
             level: sponsorLevel + 1,
             ParentId: parentId,
         });
-    // console.log(newUser);
+    console.log(newUser);
+    
         return res.status(201).json({status:true ,message: "User registered successfully!", username: newUser.username });
     } catch (error) {
         console.error("Error:", error.message);
