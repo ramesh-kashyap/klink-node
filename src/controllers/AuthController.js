@@ -3,7 +3,7 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
-
+require('dotenv').config();
 
 
 // Register User Function
@@ -78,40 +78,56 @@ const register = async (req, res) => {
 
 // Login User Function
 const login = async (req, res) => {
+    console.log('hello');
+
     try {
-        const { username, password } = req.body;
+      // Destructure username and password from the request body.
+      const { email, password } = req.body;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     
+      if (!emailRegex.test(email)) {
+        console.log('Invalid email address');
+        return res.status(400).json({ error: 'Invalid email address.' });
+      }
+      if (!email || !password) {
+        console.log('User not found!');
+        return res.status(400).json({ error: "Username and Password are required!" });
+      }
+         
+      // Find the user using Sequelize
+      const user = await User.findOne({ where: { email } });
+  
+      if (!user) {
+        console.log('User not found!')
+        return res.status(400).json({ error: "User not found!" });
 
-        if (!username || !password) {
-            return res.status(400).json({ error: "Username and Password are required!" });
-        }
-
-        // Check if user exists
-        const [user] = await db.promise().query(
-            "SELECT * FROM users WHERE username = ?", [username]
-        );
-
-        if (user.length === 0) {
-            return res.status(400).json({ error: "User not found!" });
-        }
-
-        const userData = user[0];
-
-        // Compare password
-        const isMatch = await bcrypt.compare(password, userData.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: "Invalid credentials!" });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign({ id: userData.id, username: userData.username }, "your_secret_key", { expiresIn: "1h" });
-
-        return res.status(200).json({ message: "Login successful!", username: userData.username, token });
-
+      }
+  
+      // Compare the provided password with the stored hashed password.
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: "Invalid credentials!" });
+      }
+  
+      // Generate a JWT token.
+      const token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_SECRET,  
+        { expiresIn: "1h" }
+      );
+  
+      return res.status(200).json({
+        status:true,
+        message: "Login successful!",
+        username: user.username,
+        token,
+      });
     } catch (error) {
-        console.error("Error:", error.message);
-        return res.status(500).json({ error: "Server error", details: error.message });
+      console.error("Error:", error.message);
+      return res.status(500).json({ status:false , error: "Server error", details: error.message });
     }
-};
+  };
+  
 
 
 

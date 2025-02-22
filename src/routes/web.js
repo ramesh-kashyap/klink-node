@@ -21,7 +21,7 @@ router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
 router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
 router.post('/list',  teamController.list);
-
+router.post('/login', AuthController.login);
 
 
 
@@ -38,4 +38,4 @@ const initWebRouter = (app) => {
     app.use('/api/auth', router);
   };
 
-  module.exports = initWebRouter;
+module.exports = initWebRouter;
