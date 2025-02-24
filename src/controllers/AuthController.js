@@ -78,7 +78,52 @@ const register = async (req, res) => {
     }
 };
 
+const otp = async (req, res) => {
+    console.log(req.body);
+    const { email } = req.body;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore[email] = otp;
+    const queryInsertUser = `
+                INSERT INTO password_resets (email, token) 
+                VALUES (email, otp)
+            `;
+    console.log(`OTP for ${email}: ${otp}`);
+    res.json({ success: true, message: "OTP sent" });
+  };
 
+// const connect = async (req, res) => {
+//     try {
+//         const {email,} = req.body;
+        
+//         if (!email) {
+//             return res.status(400).json({ error: "All fields are required!" });
+//         }
+
+//         // Check if user already exists
+//         const [existingUser] = await db.execute(
+//             "SELECT * FROM users WHERE email = ?", [email]
+//         );
+        
+//         if (existingUser.length > 0) {
+//             return res.status(400).json({ error: "Email or Phone already exists!" });
+//         }
+
+//         // Construct new user object
+//         const newUser = {
+//             email,
+//         };
+//         const queryInsertUser = `
+//                 INSERT INTO users (email) 
+//                 VALUES (email)
+//             `;
+
+//         return res.status(201).json({ message: "User registered successfully!", username });
+
+//     } catch (error) {
+//         console.error("Error:", error.message);
+//         return res.status(500).json({ error: "Server error", details: error.message });
+//     }
+// };
 
 // Export function
 
@@ -200,5 +245,5 @@ const loginWithTelegram = async (req, res) => {
 };
 
 
-module.exports = { login, register, logout,loginWithTelegram };
+module.exports = { login, register, logout,loginWithTelegram,otp };
 
