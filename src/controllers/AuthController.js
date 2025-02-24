@@ -200,7 +200,7 @@ const loginWithTelegram = async (req, res) => {
         });
         if (users.length > 0) {
             // ✅ User exists, generate JWT token
-            const user = users[0]; // Extract first user
+            const user = users[0]; // Extract first
 
             const token = jwt.sign(
                 { id: user.id, telegram_id: user.telegram_id },
