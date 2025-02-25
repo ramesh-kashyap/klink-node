@@ -9,9 +9,7 @@ const axios = require("axios"); // For sending messages to Telegram
 const initWebRouter = require("./routes/web");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_WEBHOOK_URL = process.env.TELEGRAM_WEBHOOK_URL; // Your webhook URL
+const PORT = process.env.PORT || 5001;
 
 // Security Middleware
 app.use(helmet());
@@ -19,7 +17,7 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: "http://localhost:3000", // Adjust as needed
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
