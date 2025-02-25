@@ -24,17 +24,11 @@ router.get("/user-income", authMiddleware, IncomeController.getUserIncome);
 router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
 router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
-router.post('/list',  teamController.list);
+router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
 router.get("/deposit-History", authMiddleware, InvestController.getHistory);
 router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
 router.get("/user-details", authMiddleware, AuthController.getUserDetails);
-
-
-
-
-
-
 
 
 // telegram api 
