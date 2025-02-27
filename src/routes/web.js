@@ -9,7 +9,7 @@ const withdrawController = require("../controllers/withdrawController");
 
 
 const authMiddleware = require("../middleware/authMiddleware"); // JWT Auth Middleware
-
+const  homeController= require('../controllers/homeController');
 const passport = require('passport');
 
 
@@ -26,9 +26,10 @@ router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
 router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
-router.get("/deposit-History", authMiddleware, InvestController.getHistory);
-router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
-router.get("/user-details", authMiddleware, AuthController.getUserDetails);
+router.get('/live-data',authMiddleware, homeController.getLiveData);
+router.get('/news',authMiddleware, homeController.getAllNews);
+router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
+router.get('/getNotifications',authMiddleware, homeController.getNotifications);
 
 
 // telegram api 

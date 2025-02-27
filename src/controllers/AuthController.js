@@ -10,11 +10,12 @@ require('dotenv').config();
 const register = async (req, res) => {
     try {
         const { fullname, lastname, selectedDate, email, password, referralCode } = req.body;
-        
+       
         if (!fullname || !lastname || !selectedDate || !email || !password || !referralCode) {
             // console.log('3');
             return res.status(400).json({ error: "All fields are required!" });
         }
+       
 
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
