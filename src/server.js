@@ -56,21 +56,21 @@ app.get("/register", (req, res) => {
 });
 
 // **Telegram Webhook Route**
-app.post("/webhook", async (req, res) => {
-    const { message } = req.body;
+// app.post("/webhook", async (req, res) => {
+//     const { message } = req.body;
 
-    if (message) {
-        const chatId = message.chat.id;
-        const userText = message.text;
+//     if (message) {
+//         const chatId = message.chat.id;
+//         const userText = message.text;
 
-        console.log("Received Message:", userText);
+//         console.log("Received Message:", userText);
 
-        // Send a response message back to the user
-        await sendMessage(chatId, `You said: ${userText}`);
-    }
+//         // Send a response message back to the user
+//         await sendMessage(chatId, `You said: ${userText}`);
+//     }
 
-    res.sendStatus(200); // Respond to Telegram to acknowledge receipt
-});
+//     res.sendStatus(200); // Respond to Telegram to acknowledge receipt
+// });
 
 // **Function to Send Message to Telegram User**
 // const sendMessage = async (chatId, text) => {
@@ -87,22 +87,22 @@ app.post("/webhook", async (req, res) => {
 // };
 
 // **Set Webhook on Server Start**
-const setWebhook = async () => {
-    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_WEBHOOK_URL) {
-        console.error("Telegram bot token or webhook URL is missing!");
-        return;
-    }
+// const setWebhook = async () => {
+//     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_WEBHOOK_URL) {
+//         console.error("Telegram bot token or webhook URL is missing!");
+//         return;
+//     }
 
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${TELEGRAM_WEBHOOK_URL}`;
-    // console.log(url);
-    // try {
-    //     const response = await axios.post(url);
-    //     console.log("Webhook set successfully:", response.data);
-    // } catch (error) {
-    //     console.error("Error setting webhook:", error.response?.data || error.message);
-    // }
+//     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${TELEGRAM_WEBHOOK_URL}`;
+//     // console.log(url);
+//     // try {
+//     //     const response = await axios.post(url);
+//     //     console.log("Webhook set successfully:", response.data);
+//     // } catch (error) {
+//     //     console.error("Error setting webhook:", error.response?.data || error.message);
+//     // }
     
-};
+// };
 
 app.get("/register", (req, res) => {
     res.send({ message: "Hello, this is a test!" });
@@ -110,7 +110,7 @@ app.get("/register", (req, res) => {
 });
 
 // Set webhook when server starts
-setWebhook();
+// setWebhook();
 
 // Start Server
 app.listen(PORT, () => {
