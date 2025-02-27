@@ -25,6 +25,10 @@ router.post('/list',  teamController.list);
 // telegram api 
 router.post('/telegram-login', AuthController.loginWithTelegram);
 router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
+router.post('/getTasks', TelegramController.getTasks);
+router.post('/startTask', TelegramController.startTask);
+router.post('/claimTask', TelegramController.claimTask);
+
 router.post('/connect', AuthController.otp);
 
 
