@@ -1,6 +1,9 @@
 const sequelize = require('../config/connectDB'); // Import Sequelize connection
 const { QueryTypes } = require('sequelize');
 const TelegramUser = require('../models/telegram');
+const Task = require("../models/Task");
+const { UserTask } = require("../models"); // Import both models
+
 let timeNow = Date.now();
 
 const getUserByTelegramId = async (req, res) => {
@@ -87,3 +90,67 @@ const updateBalance = async (req, res) => {
 
 
 module.exports = { getUserByTelegramId, updateBalance};
+const startTask = async (req, res) => {
+    try {
+        const { telegram_id, task_id } = req.body;
+
+      
+        const [userTask, created] = await UserTask.findOrCreate({
+            where: { telegram_id, task_id },
+            defaults: { status: "pending" },
+          });
+          res.json({ message: created ? "Task started" : "Task already in progress" });
+
+    } catch (error) {
+        res.status(500).json({ error: "Error starting task" });
+    }
+  };
+
+
+  const claimTask = async (req, res) => {
+    try {
+        const { telegram_id, task_id } = req.body;
+
+        await UserTask.update({ status: "completed" }, { where: { telegram_id, task_id } });
+
+        res.json({ message: "Task claimed successfully" });
+
+    } catch (error) {
+        res.status(500).json({ error: "Error starting task" });
+    }
+  };
+
+const getTasks = async (req, res) => {
+    try {
+        const { telegram_id } = req.body;        
+        const tasks = await Task.findAll({
+            include: [
+              {
+                model: UserTask,
+                as: "userTasks",
+                where: { telegram_id },
+                required: false,
+              },
+            ],
+          });
+      
+          // Format response to include status
+          const formattedTasks = tasks.map((task) => ({
+            id: task.id,
+            name: task.name,
+            reward: task.reward,
+            icon: task.icon,
+            status: task.userTasks?.length ? task.userTasks[0].status : "not_started",
+          }));
+      
+          res.json(formattedTasks);
+
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  
+
+module.exports = { getUserByTelegramId,getTasks,startTask,claimTask };

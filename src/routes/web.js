@@ -27,6 +27,12 @@ router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
 router.post('/connect', AuthController.connect);
 router.post('/verify-otp', AuthController.otp);
 router.post('/updateBalance', authMiddleware,TelegramController.updateBalance);
+router.post('/getTasks', TelegramController.getTasks);
+router.post('/startTask', TelegramController.startTask);
+router.post('/claimTask', TelegramController.claimTask);
+
+router.post('/connect', AuthController.otp);
+
 
 router.get('/check',(req, res) => {
   console.log("Hello World"); // Print in server logs
