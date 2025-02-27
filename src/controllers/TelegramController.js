@@ -1,6 +1,6 @@
 const sequelize = require('../config/connectDB'); // Import Sequelize connection
 const { QueryTypes } = require('sequelize');
-
+const TelegramUser = require('../models/telegram');
 let timeNow = Date.now();
 
 const getUserByTelegramId = async (req, res) => {
@@ -53,4 +53,37 @@ const getUserByTelegramId = async (req, res) => {
     }
 };
 
-module.exports = { getUserByTelegramId };
+const updateBalance = async (req, res) => {
+    try {
+        const { balance } = req.body;
+        console.log("🔹 Requested Balance:", balance);
+
+        const userId = req.user?.id; // Ensure req.user is not undefined
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized: User ID missing" });
+        }
+
+        const user = await TelegramUser.findOne({ where: { id: userId } });
+        console.log(user);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const newBalance = (user.balance || 0) + 1;
+
+        // ✅ Use `update()` instead of `increment()`
+        await TelegramUser.update({ balance: newBalance }, { where: { id: userId } });
+
+        return res.status(200).json({
+            message: "Balance updated successfully",
+            balance: user.balance,
+        });
+
+    } catch (error) {
+        console.error("❌ Error updating balance:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+module.exports = { getUserByTelegramId, updateBalance};

@@ -3,7 +3,7 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
-
+const otpStore = {}; 
 
 
 // Register User Function
@@ -78,18 +78,72 @@ const register = async (req, res) => {
     }
 };
 
-const otp = async (req, res) => {
+const connect = async (req, res) => {
     console.log(req.body);
     const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ success: false, message: "Email is required" });
+    }
+    const queryGetUser = `SELECT * FROM users WHERE email = :email`;
+
+        const users = await sequelize.query(queryGetUser, {
+            replacements: { email },
+            type: QueryTypes.SELECT, // Ensures it returns an array of objects
+        });
+    if(!users){
+        return res.status(400).json({ success: false, message: "User not Found"});
+    }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = otp;
     const queryInsertUser = `
-                INSERT INTO password_resets (email, token) 
-                VALUES (email, otp)
-            `;
+    INSERT INTO password_resets (email, token) 
+    VALUES (:email, :otp)
+`;
+
+const [insertResult] = await sequelize.query(queryInsertUser, {
+    replacements: { email, otp },
+    type: QueryTypes.INSERT,
+});
     console.log(`OTP for ${email}: ${otp}`);
     res.json({ success: true, message: "OTP sent" });
   };
+
+
+  const otp = async (req, res) => {
+    console.log(req.body);
+    const { otp, email, telegram_id } = req.body;
+    if (!otp || !email || !telegram_id) {
+        return res.status(400).json({ success: false, message: "OTP and Email are required" });
+    }
+    try {
+        const queryGetCode = `
+            SELECT * FROM password_resets 
+            WHERE email = :email AND token = :otp
+        `;
+        const codes = await sequelize.query(queryGetCode, {
+            replacements: { email, otp },
+            type: QueryTypes.SELECT,
+        });
+        if (codes.length > 0) {
+            const queryUpdateUser = `
+                UPDATE users 
+                SET telegram_id = :telegram_id
+                WHERE email = :email
+            `;
+            await sequelize.query(queryUpdateUser, {
+                replacements: { telegram_id, email },
+                type: QueryTypes.UPDATE,
+            });
+            return res.status(200).json({ success: true, message: "OTP match" });
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid OTP" });
+        }
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
 
 // const connect = async (req, res) => {
 //     try {
@@ -245,5 +299,5 @@ const loginWithTelegram = async (req, res) => {
 };
 
 
-module.exports = { login, register, logout,loginWithTelegram,otp };
+module.exports = { login, register, logout,loginWithTelegram,connect,otp};
 

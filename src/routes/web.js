@@ -13,7 +13,6 @@ const googleController = require('../controllers/googleController');
 const teamController = require('../controllers/teamController');
 
 
-
 router.post('/google', googleController.verifyGoogleToken);
 router.post(' /register', AuthController.register);
 router.get("/direct-income", authMiddleware, IncomeController.getDirectIncome);
@@ -25,8 +24,9 @@ router.post('/list',  teamController.list);
 // telegram api 
 router.post('/telegram-login', AuthController.loginWithTelegram);
 router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
-router.post('/connect', AuthController.otp);
-
+router.post('/connect', AuthController.connect);
+router.post('/verify-otp', AuthController.otp);
+router.post('/updateBalance', authMiddleware,TelegramController.updateBalance);
 
 router.get('/check',(req, res) => {
   console.log("Hello World"); // Print in server logs
