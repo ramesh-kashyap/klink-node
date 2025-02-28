@@ -89,6 +89,7 @@ const getTasks = async (req, res) => {
     try {
         const { telegram_id } = req.body;        
         const tasks = await Task.findAll({
+            where: { isTop: '0' }, // Example: Filtering tasks with status = 'active'
             include: [
               {
                 model: UserTask,
@@ -105,10 +106,37 @@ const getTasks = async (req, res) => {
             name: task.name,
             reward: task.reward,
             icon: task.icon,
+            link: task.link,
+            isTop: task.isTop,
             status: task.userTasks?.length ? task.userTasks[0].status : "not_started",
           }));
+
+
+          const tasks2 = await Task.findAll({
+            where: { isTop: '1' }, // Example: Filtering tasks with status = 'active'
+            include: [
+              {
+                model: UserTask,
+                as: "userTasks",
+                where: { telegram_id },
+                required: false,
+              },
+            ],
+          });
       
-          res.json(formattedTasks);
+          // Format response to include status
+          const formattedTasks2 = tasks2.map((task) => ({
+            id: task.id,
+            name: task.name,
+            reward: task.reward,
+            icon: task.icon,
+            link: task.link,
+            isTop: task.isTop,
+            status: task.userTasks?.length ? task.userTasks[0].status : "not_started",
+          }));
+
+          
+          res.json({topTask:formattedTasks2,buttonTask:formattedTasks});
 
     } catch (error) {
       console.error("Error fetching tasks:", error);
