@@ -5,6 +5,7 @@ const IncomeController = require("../controllers/incomeController");
 const TelegramController = require("../controllers/TelegramController");
 const InvestController = require("../controllers/InvestController");
 const withdrawController = require("../controllers/withdrawController");
+const profileController = require("../controllers/profileController");
 
 
 
@@ -30,6 +31,10 @@ router.get('/live-data',authMiddleware, homeController.getLiveData);
 router.get('/news',authMiddleware, homeController.getAllNews);
 router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
 router.get('/getNotifications',authMiddleware, homeController.getNotifications);
+router.get('/getUsername',authMiddleware, AuthController.getUserDetails);
+router.put('/updateUsername', authMiddleware, profileController.updateUserProfile);
+router.put('/updateFullName', authMiddleware, profileController.updateUserFullName);
+
 
 
 // telegram api 
