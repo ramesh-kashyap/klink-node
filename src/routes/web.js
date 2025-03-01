@@ -22,6 +22,7 @@ router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
 router.post('/list',  teamController.list);
 router.post('/login', AuthController.login);
+router.post('/verify-pin', AuthController.verifyPin);
 router.get('/live-data',authMiddleware, homeController.getLiveData);
 router.get('/news',authMiddleware, homeController.getAllNews);
 router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
