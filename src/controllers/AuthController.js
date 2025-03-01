@@ -220,31 +220,8 @@ const loginWithTelegram = async (req, res) => {
 
 
 
-const getUserDetails = async (req, res) => {
-    try {
-        const userId = req.user.id; // JWT ya session se logged-in user ka ID lein
-
-        // User ka data database se fetch karein
-        const user = await User.findOne({
-            where: { id: userId }, // `id` ke basis par user ko fetch karein
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found", status: false });
-        }
-
-        return res.status(200).json({
-            ...user.dataValues, // Poora user model ka data return karega
-            status: true
-        });
-
-    } catch (error) {
-        console.error("❌ Error fetching user details:", error);
-        return res.status(500).json({ error: "Internal Server Error", status: false });
-    }
-};
 
 
 
-module.exports = { login, register, logout,loginWithTelegram ,getUserDetails};
+module.exports = { login, register, logout,loginWithTelegram };
 
