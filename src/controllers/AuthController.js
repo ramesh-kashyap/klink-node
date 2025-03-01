@@ -140,6 +140,60 @@ const login = async (req, res) => {
   };
   
 
+  const verifyPin = async (req, res) => {
+    console.log('hello');
+
+    try {
+      // Destructure username and password from the request body.
+      const { pin } = req.body;
+     
+      if (!pin) {
+        console.log('Pin is not Present!');
+        return res.status(400).json({ error: "Pin is not Present!" });
+      }
+         
+      if (!pin || pin.length !== 4) {
+        return res.status(400).json({ message: "Invalid PIN format" });
+    }
+
+      // Find the user using Sequelize
+    
+      const user = await User.findOne({ where: { pin } });
+      
+      if (!user) {
+        console.log('User not found!')
+        return res.status(400).json({ error: "User not found!" });
+
+      }
+  
+      // Compare the provided password with the stored hashed password.
+    //   const isMatch = await bcrypt.compare(password, user.password);
+    console.log('user',user);
+      if (pin!==user.pin) {
+        console.log('Invalid credentials!')
+        return res.status(400).json({ error: "Invalid credentials!" });
+        
+      }
+  
+      // Generate a JWT token.
+      const token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_SECRET,  
+        { expiresIn: "1h" }
+      );
+  
+      return res.status(200).json({
+        status:true,
+        message: "Login successful!",
+        username: user.username,
+        token,
+      });
+    } catch (error) {
+      console.error("Error:", error.message);
+      return res.status(500).json({ status:false , error: "Server error", details: error.message });
+    }
+  };
+
 
 
 const logout = async (req, res) => {
@@ -219,9 +273,5 @@ const loginWithTelegram = async (req, res) => {
 };
 
 
-
-
-
-
-module.exports = { login, register, logout,loginWithTelegram };
+module.exports = { login, register, logout,loginWithTelegram ,verifyPin };
 
