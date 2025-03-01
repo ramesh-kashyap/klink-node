@@ -13,7 +13,6 @@ const authMiddleware = require("../middleware/authMiddleware"); // JWT Auth Midd
 const  homeController= require('../controllers/homeController');
 const passport = require('passport');
 
-
 const googleController = require('../controllers/googleController');
 const teamController = require('../controllers/teamController');
 

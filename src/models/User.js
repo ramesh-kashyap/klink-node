@@ -61,7 +61,7 @@ const User = sequelize.define('User', {
     }
     , pin: {
         type: DataTypes.STRING,
-      
+        allowNull: true
     }
 
     
