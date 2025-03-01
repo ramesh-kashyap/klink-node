@@ -107,16 +107,17 @@ const login = async (req, res) => {
          
       // Find the user using Sequelize
       const user = await User.findOne({ where: { email } });
-  
+       
       if (!user) {
         console.log('User not found!')
         return res.status(400).json({ error: "User not found!" });
 
       }
-  
+      console.log("user:",user );
       // Compare the provided password with the stored hashed password.
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
+        console.log('Invalid credentials!')
         return res.status(400).json({ error: "Invalid credentials!" });
       }
   
@@ -124,7 +125,7 @@ const login = async (req, res) => {
       const token = jwt.sign(
         { id: user.id },
         process.env.JWT_SECRET,  
-        { expiresIn: "1h" }
+       
       );
   
       return res.status(200).json({
@@ -175,18 +176,13 @@ const login = async (req, res) => {
         
       }
   
-      // Generate a JWT token.
-      const token = jwt.sign(
-        { id: user.id },
-        process.env.JWT_SECRET,  
-        { expiresIn: "1h" }
-      );
+    
   
       return res.status(200).json({
         status:true,
         message: "Login successful!",
         username: user.username,
-        token,
+       
       });
     } catch (error) {
       console.error("Error:", error.message);
