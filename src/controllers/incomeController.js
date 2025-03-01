@@ -1,22 +1,37 @@
 
 const db = require("../config/connectDB");
-const Income = require("../models/Income");
+const { User, Investment, Withdraw, Income } = require('../models');
+const { Op } = require('sequelize');
+const jwt = require("jsonwebtoken");
+const authMiddleware = require('../middleware/authMiddleware');
 
 
 
 
-exports.getDirectIncome = async (req, res) => {
+exports.getUserIncome = async (req, res) => {
   try {
-    console.log("Fetching all income data"); // ✅ Debugging
+    // Ensure user authentication middleware is used
+    const userId = req.user.id; // Assuming req.user is set after authentication
 
-    // Fetch all income data using Sequelize
-    const income = await Income.findAll();
 
-    console.log("All Income Data:", income); // ✅ Debugging database result
+    if (!userId || !userId) {
+      return res.status(200).json({ error: " User Id Not  found" });
+  }
+    console.log(`Fetching income for user ID: ${userId}`);
 
-    return res.status(200).json({ success: true, data: income });
+    const incomeData = await Income.findAll({
+      where: {
+        user_id: userId, // Filter by logged-in user's ID
+      },
+      order: [["id", "DESC"]], // Order by id in descending order
+      raw: true, // Returns plain JSON data without extra Sequelize metadata
+    });
+
+    console.log("Fetched Income Data:", incomeData);
+
+    return res.status(200).json({ success: true, data: incomeData });
   } catch (error) {
-    console.error("Error fetching incomes:", error.message);
+    console.error("Error fetching income data:", error.stack);
     return res.status(500).json({ error: "Server error", details: error.message });
   }
 };

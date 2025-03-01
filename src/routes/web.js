@@ -3,6 +3,11 @@ let router = express.Router();
 const AuthController = require("../controllers/AuthController");
 const IncomeController = require("../controllers/incomeController");
 const TelegramController = require("../controllers/TelegramController");
+const InvestController = require("../controllers/InvestController");
+const withdrawController = require("../controllers/withdrawController");
+const profileController = require("../controllers/profileController");
+
+
 
 const authMiddleware = require("../middleware/authMiddleware"); // JWT Auth Middleware
 const  homeController= require('../controllers/homeController');
@@ -16,17 +21,21 @@ const teamController = require('../controllers/teamController');
 
 router.post('/google', googleController.verifyGoogleToken);
 router.post('/register', AuthController.register);
-router.get("/direct-income", authMiddleware, IncomeController.getDirectIncome);
+router.get("/user-income", authMiddleware, IncomeController.getUserIncome);
 router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
 router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
-router.post('/list',  teamController.list);
+router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
 router.post('/verify-pin', AuthController.verifyPin);
 router.get('/live-data',authMiddleware, homeController.getLiveData);
 router.get('/news',authMiddleware, homeController.getAllNews);
 router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
 router.get('/getNotifications',authMiddleware, homeController.getNotifications);
+router.get('/getUsername',authMiddleware, AuthController.getUserDetails);
+router.put('/updateUsername', authMiddleware, profileController.updateUserProfile);
+router.put('/updateFullName', authMiddleware, profileController.updateUserFullName);
+
 
 
 // telegram api 

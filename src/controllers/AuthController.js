@@ -17,6 +17,16 @@ const register = async (req, res) => {
         }
        
 
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     
+        if (!emailRegex.test(email)) {
+          console.log('Invalid email address');
+          return res.status(400).json({ error: 'Invalid email address.' });
+        }
+
+
+
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -61,7 +71,8 @@ const register = async (req, res) => {
             level: sponsorLevel + 1,
             ParentId: parentId,
         });
-    // console.log(newUser);
+    console.log(newUser);
+    
         return res.status(201).json({status:true ,message: "User registered successfully!", username: newUser.username });
     } catch (error) {
         console.error("Error:", error.message);
@@ -196,6 +207,7 @@ const logout = async (req, res) => {
 
 
 const loginWithTelegram = async (req, res) => {
+    console.log(req.body);
     try {
         const { telegram_id, tusername, tname, tlastname } = req.body;
 

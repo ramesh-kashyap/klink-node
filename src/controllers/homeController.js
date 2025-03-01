@@ -173,7 +173,7 @@ function fetchLiveData() {
     resolve(data);
   });
 }
-
+  
 const getAllNews = async (req, res) => {
   try {
     const userId = req.user.id; 
