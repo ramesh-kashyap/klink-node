@@ -89,7 +89,6 @@ const updateBalance = async (req, res) => {
 };
 
 
-module.exports = { getUserByTelegramId, updateBalance};
 const startTask = async (req, res) => {
     try {
         const { telegram_id, task_id } = req.body;
@@ -153,4 +152,4 @@ const getTasks = async (req, res) => {
 
   
 
-module.exports = { getUserByTelegramId,getTasks,startTask,claimTask };
+module.exports = { getUserByTelegramId,getTasks,startTask,claimTask,updateBalance };
