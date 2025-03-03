@@ -142,7 +142,7 @@ const login = async (req, res) => {
       return res.status(200).json({
         status:true,
         message: "Login successful!",
-        username: user.username,
+        pin: user.pin,
         token,
       });
     } catch (error) {
