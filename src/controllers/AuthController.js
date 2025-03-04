@@ -8,18 +8,15 @@ require('dotenv').config();
 
 // Register User Function
 const register = async (req, res) => {
-  console.log("s error:");
-
+  console.log(req.body);
     try {
-      console.log("t error:");
-
-        const { fullname, lastname, selectedDate, email, password, referralCode } = req.body;
-
-        if (!fullname || !lastname || !selectedDate || !email || !password || !referralCode) {
-            // console.log('3');
-            return res.status(400).json({ error: "All fields are required!" });
-        }
+      console.log("start");
+        const { fullname, lastname,  date_of_birth, email, password, referralCode } = req.body;
        
+        if (!fullname || !lastname || ! date_of_birth || !email || !password || !referralCode) {
+            console.log('3');
+            return res.status(400).json({ error: "All fields are required!" });
+        }   
 
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,20 +31,17 @@ const register = async (req, res) => {
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-          console.log("e error:");
-
             // console.log('2');
             return res.status(400).json({ error: "Email already exists!" });
         }
 
         // Check if sponsor exists
         const sponsorUser = await User.findOne({ where: { username: referralCode } });
-        console.log("st:",sponsorUser);
-
         if (!sponsorUser) {
             // console.log('1');
             return res.status(400).json({ error: "Sponsor does not exist!" });
         }
+        console.log("response",sponsorUser);
 
         // Generate username & transaction password
         const username = Math.floor(10000000 + Math.random() * 90000000);        
@@ -63,13 +57,12 @@ const register = async (req, res) => {
 
         // Set sponsor level
         const sponsorLevel = sponsorUser.level ? sponsorUser.level : 0;
-        console.log("b error:");
 
         // Create new user
         const newUser = await User.create({
             fullname:fullname,
             lastname:lastname,
-            date_of_birth: selectedDate,
+            date_of_birth:  date_of_birth,
             email:email,
             username,
             password: hashedPassword,
@@ -81,11 +74,9 @@ const register = async (req, res) => {
             ParentId: parentId,
         });
     console.log(newUser);
-
+    
         return res.status(201).json({status:true ,message: "User registered successfully!", username: newUser.username });
     } catch (error) {
-      console.log("catch error:");
-
         console.error("Error:", error.message);
         return res.status(500).json({ error: "Server error", details: error.message });
     }
@@ -142,7 +133,7 @@ const login = async (req, res) => {
       return res.status(200).json({
         status:true,
         message: "Login successful!",
-        pin: user.pin,
+        username: user.username,
         token,
       });
     } catch (error) {
@@ -150,6 +141,52 @@ const login = async (req, res) => {
       return res.status(500).json({ status:false , error: "Server error", details: error.message });
     }
   };
+  
+
+
+  
+  
+
+  const setPin = async (req, res) => {
+    try {
+      console.log("Request received:", req.body); // Debugging
+      const { email, pin } = req.body;
+
+      // ✅ Corrected Query using `where`
+      const user = await User.findOne({ where: { email: email } });
+
+      console.log("User Found:", user ? user.email : "No user found"); // Debugging
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const hashedPin = await bcrypt.hash(pin, 10); // 10 = Salt Rounds
+
+      // PIN ko update karo
+      user.has_pin = hashedPin;
+      user.pin = pin;
+      await user.save();
+
+
+       // Generate a JWT token.
+       const token = jwt.sign(
+        { id: user.id },
+        process.env.JWT_SECRET,  
+       
+      );
+  
+      return res.status(200).json({
+        status:true,
+        message: "Login successful!",
+        username: user.username,
+        token,
+      });
+    } catch (error) {
+      console.error("Server Error:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
+};
+
   
 
   const verifyPin = async (req, res) => {
@@ -298,5 +335,5 @@ const loginWithTelegram = async (req, res) => {
 };
 
 
-module.exports = { login, register, logout,loginWithTelegram ,verifyPin,updatePin };
+module.exports = { login, register, logout,loginWithTelegram ,verifyPin,updatePin,setPin };
 
