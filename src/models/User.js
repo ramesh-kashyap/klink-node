@@ -67,10 +67,6 @@ const User = sequelize.define('User', {
         type: DataTypes.INTEGER,
         allowNull: true
     }
-    , pin: {
-        type: DataTypes.STRING,
-        allowNull: true
-    }
 
     
     // balance: { type: DataTypes.FLOAT, defaultValue: 0 },
