@@ -30,7 +30,17 @@ router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
 router.get("/deposit-History", authMiddleware, InvestController.getHistory);
 router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
-router.put("/user-details", authMiddleware, AuthController.getUserDetails);
+router.post('/verify-pin',authMiddleware, AuthController.verifyPin);
+router.get('/live-data',authMiddleware, homeController.getLiveData);
+router.get('/news',authMiddleware, homeController.getAllNews);
+router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
+router.get('/getNotifications',authMiddleware, homeController.getNotifications);
+router.post('/updatePin',authMiddleware, AuthController.updatePin);
+
+router.put('/updateUsername', authMiddleware, profileController.updateUserProfile);
+router.put('/updateFullName', authMiddleware, profileController.updateUserFullName);
+
+
 
 
 // telegram api 
