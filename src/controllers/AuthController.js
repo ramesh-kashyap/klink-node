@@ -3,8 +3,10 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
+
 require('dotenv').config();
 
+const path = require("path");
 
 // Register User Function
 const register = async (req, res) => {
@@ -19,7 +21,6 @@ const register = async (req, res) => {
         }   
 
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
      
         if (!emailRegex.test(email)) {
           console.log('Invalid email address');
@@ -205,9 +206,11 @@ const login = async (req, res) => {
   
   
       // Direct comparison (for plain text)
-      if (pin !== user.pin) {
+      if (!(await bcrypt.compare(pin, user.has_pin))) {
+        console.log("PIN Mismatch: Incorrect old PIN");
         return res.status(400).json({ error: "Incorrect old PIN" });
       }
+    
       return res.json({ status:true,message: "Old PIN verified successfully!" });
   
     } catch (error) {

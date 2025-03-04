@@ -28,6 +28,8 @@ router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 router.post("/team",teamController.getTeam);
 router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
+router.get("/deposit-History", authMiddleware, InvestController.getHistory);
+router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
 router.post('/verify-pin',authMiddleware, AuthController.verifyPin);
 router.get('/live-data',authMiddleware, homeController.getLiveData);
 router.get('/news',authMiddleware, homeController.getAllNews);
@@ -40,9 +42,11 @@ router.put('/updateFullName', authMiddleware, profileController.updateUserFullNa
 
 
 
+
 // telegram api 
 router.post('/telegram-login', AuthController.loginWithTelegram);
 router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
+
 
 
 
