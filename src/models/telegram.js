@@ -7,6 +7,7 @@ const Telegram_user = sequelize.define('Telegram', {
     tusername: { type: DataTypes.STRING, allowNull: false },
     telegram_id: { type: DataTypes.INTEGER, allowNull: true },
     balance: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    coin_balance: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
 }, {
     tableName: 'telegram_users',
     timestamps: false

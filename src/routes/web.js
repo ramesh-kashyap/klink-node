@@ -31,10 +31,12 @@ router.post('/getTasks', TelegramController.getTasks);
 router.post('/startTask', TelegramController.startTask);
 router.post('/claimTask', TelegramController.claimTask);
 
-router.post('/connect', AuthController.otp);
+// router.post('/connect', AuthController.otp);
 router.post('/baycoin', authMiddleware,TelegramController.daycoin);
 router.post('/claim-day', authMiddleware,TelegramController.claimday);
 router.post('/claim-reward',authMiddleware,TelegramController.claimtoday);
+router.post('/fatchPoint',authMiddleware,TelegramController.fatchpoint);
+router.post('/fatchBalance', authMiddleware,TelegramController.fatchBalance);
 router.get('/check',(req, res) => {
   console.log("Hello World"); // Print in server logs
   return res.json({ message: "Hello World" }); // Send response to client

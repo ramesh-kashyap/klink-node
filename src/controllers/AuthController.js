@@ -65,7 +65,7 @@ const register = async (req, res) => {
         };
 
         // Optional: Log newUser for debugging (avoid logging sensitive info in production)
-        console.log("New User Data:", newUser);
+        // console.log("New User Data:", newUser);
 
         // Insert new user into the database
         await db.execute("INSERT INTO users SET ?", newUser);
@@ -79,18 +79,19 @@ const register = async (req, res) => {
 };
 
 const connect = async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
+    try{    
     const { email } = req.body;
     if (!email) {
         return res.status(400).json({ success: false, message: "Email is required" });
-    }
-    const queryGetUser = `SELECT * FROM users WHERE email = :email`;
-
-        const users = await sequelize.query(queryGetUser, {
-            replacements: { email },
-            type: QueryTypes.SELECT, // Ensures it returns an array of objects
-        });
-    if(!users){
+    }    
+    const Euser = await User.findOne({ where: { email: email } }); 
+    // const queryGetUser = `SELECT * FROM users WHERE email = :email`; 
+        // const users = await sequelize.query(queryGetUser, {
+        //     replacements: { email },
+        //     type: QueryTypes.SELECT, // Ensures it returns an array of objects
+        // });
+    if(!Euser){
         return res.status(400).json({ success: false, message: "User not Found"});
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -104,13 +105,17 @@ const [insertResult] = await sequelize.query(queryInsertUser, {
     replacements: { email, otp },
     type: QueryTypes.INSERT,
 });
-    console.log(`OTP for ${email}: ${otp}`);
+    // console.log(`OTP for ${email}: ${otp}`);
     res.json({ success: true, message: "OTP sent" });
+}
+catch{
+     console.error("Some error in otp generating");
+}
   };
 
 
   const otp = async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     const { otp, email, telegram_id } = req.body;
     if (!otp || !email || !telegram_id) {
         return res.status(400).json({ success: false, message: "OTP and Email are required" });
@@ -233,11 +238,11 @@ const logout = async (req, res) => {
 
 
 const loginWithTelegram = async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const { telegram_id, tusername, tname, tlastname } = req.body;
 
-        console.log("🔹 Telegram ID:", telegram_id);
+        // console.log("🔹 Telegram ID:", telegram_id);
 
         if (!telegram_id) {
             return res.status(200).json({ message: "Telegram ID is required" });
