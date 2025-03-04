@@ -51,7 +51,7 @@ const updateUserFullName = async (req, res) => {
 
         res.json({ message: "Profile updated successfully", fullname });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Something went wrong! Please try again." });
     }
 };
 

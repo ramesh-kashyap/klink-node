@@ -196,22 +196,18 @@ const login = async (req, res) => {
       const userId = req.user.id;
       const { pin } = req.body;
   
-      console.log("User ID:", userId);
-      console.log("Received PIN:", pin);
+      
   
       const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
   
-      console.log("Stored PIN in DB:", pin);
   
       // Direct comparison (for plain text)
       if (pin !== user.pin) {
-        console.log("PIN Mismatch: Incorrect old PIN");
         return res.status(400).json({ error: "Incorrect old PIN" });
       }
-      console.log("check: Incorrect old PIN");
       return res.json({ status:true,message: "Old PIN verified successfully!" });
   
     } catch (error) {
