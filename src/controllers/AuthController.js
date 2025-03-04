@@ -207,11 +207,11 @@ const login = async (req, res) => {
       console.log("Stored PIN in DB:", pin);
   
       // Direct comparison (for plain text)
-      if (pin !== user.pin) {
+      if (!(await bcrypt.compare(pin, user.has_pin))) {
         console.log("PIN Mismatch: Incorrect old PIN");
         return res.status(400).json({ error: "Incorrect old PIN" });
       }
-      console.log("check: Incorrect old PIN");
+    
       return res.json({ status:true,message: "Old PIN verified successfully!" });
   
     } catch (error) {
