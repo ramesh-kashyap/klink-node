@@ -180,6 +180,43 @@ const getTeam = async (req, res) => {
 };
 
 
+const distributeCommissions = async (userId, amount) => {
+    let currentUser = await User.findByPk(userId);
+    let level = 1;
+  
+    while (currentUser && currentUser.sponsor && level <= 30) {
+      const referrer = await User.findByPk(currentUser.sponsor);
+  
+      if (!referrer) break;
+  
+      // Determine the percentage based on level
+      const percentage = LEVEL_PERCENTAGES[level] || 0;
+      const commission = (amount * percentage) / 100;
+  
+      if (commission > 0) {
+        // Ensure monthly earnings do not exceed 200% of initial deposit
+        const newMonthlyEarnings = referrer.monthlyEarnings + commission;
+        const earningLimit = (referrer.earnings * MAX_MONTHLY_EARNING_PERCENT) / 100;
+  
+        if (newMonthlyEarnings <= earningLimit) {
+          await referrer.update({
+            earnings: referrer.earnings + commission,
+            monthlyEarnings: newMonthlyEarnings,
+          });
+  
+          console.log(
+            `Level ${level}: User ${referrer.id} earned ${commission.toFixed(2)}`
+          );
+        } else {
+          console.log(`User ${referrer.id} exceeded monthly limit.`);
+        }
+      }
+  
+      currentUser = referrer;
+      level++;
+    }
+  };
+  
 
 const list = async (req, res) => {
     try {
