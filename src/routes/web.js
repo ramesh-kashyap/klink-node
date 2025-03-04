@@ -28,12 +28,13 @@ router.post('/list', authMiddleware, teamController.list);
 router.post('/login', AuthController.login);
 router.get("/deposit-History", authMiddleware, InvestController.getHistory);
 router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
-router.get("/user-details", authMiddleware, AuthController.getUserDetails);
+router.put("/user-details", authMiddleware, AuthController.getUserDetails);
 
 
 // telegram api 
 router.post('/telegram-login', AuthController.loginWithTelegram);
 router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
+
 
 
 

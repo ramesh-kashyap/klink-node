@@ -3,8 +3,10 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
+
 require('dotenv').config();
 
+const path = require("path");
 
 // Register User Function
 const register = async (req, res) => {
@@ -17,7 +19,6 @@ const register = async (req, res) => {
         }
 
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
      
         if (!emailRegex.test(email)) {
           console.log('Invalid email address');
@@ -220,27 +221,35 @@ const loginWithTelegram = async (req, res) => {
 
 const getUserDetails = async (req, res) => {
     try {
-        const userId = req.user.id; // JWT ya session se logged-in user ka ID lein
+        const userId = req.user.id; // 🔹 JWT ya session se logged-in user ka ID lein
+        const { fullname } = req.body; // 🟢 Update karne wale fields
 
-        // User ka data database se fetch karein
-        const user = await User.findOne({
-            where: { id: userId }, // `id` ke basis par user ko fetch karein
-        });
+        // Check karein ki user exist karta hai ya nahi
+        const user = await User.findOne({ where: { id: userId } });
 
         if (!user) {
             return res.status(404).json({ error: "User not found", status: false });
         }
 
+        // ✅ User ka data update karein
+        await user.update({
+            fullname: fullname || user.fullname,
+        });
+
         return res.status(200).json({
-            ...user.dataValues, // Poora user model ka data return karega
-            status: true
+            message: "User details updated successfully",
+            status: true,
+            user: user.dataValues
         });
 
     } catch (error) {
-        console.error("❌ Error fetching user details:", error);
+        console.error("❌ Error updating user details:", error);
         return res.status(500).json({ error: "Internal Server Error", status: false });
     }
 };
+
+
+
 
 
 

@@ -58,8 +58,9 @@ const User = sequelize.define('User', {
         type: DataTypes.INTEGER,
         allowNull: true
     }
+,
+    image: { type: DataTypes.STRING, allowNull: true } // ✅ Image ke liye column
 
-    
     // balance: { type: DataTypes.FLOAT, defaultValue: 0 },
 }, {
     tableName: 'users',
