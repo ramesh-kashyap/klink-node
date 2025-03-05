@@ -20,6 +20,10 @@ const UserTask = sequelize.define("UserTask", {
       key: "id",
     },
   },
+  bonus:{
+    type: DataTypes.INTEGER,
+    allowNull: true,    
+  },
   status: {
     type: DataTypes.ENUM("pending", "completed"),
     defaultValue: "pending",
