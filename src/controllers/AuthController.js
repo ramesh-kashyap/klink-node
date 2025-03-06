@@ -13,6 +13,8 @@ const register = async (req, res) => {
   console.log(req.body);
     try {
       console.log("start");
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
         const { fullname, lastname,  date_of_birth, email, password, referralCode } = req.body;
        
         if (!fullname || !lastname || ! date_of_birth || !email || !password || !referralCode) {
@@ -190,36 +192,33 @@ const login = async (req, res) => {
 
   
 
-  const verifyPin = async (req, res) => {
-    try {
-      
-  
-      const userId = req.user.id;
-      const { pin } = req.body;
-  
-      
-  
-      const user = await User.findByPk(userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
-  
-      // Direct comparison (for plain text)
-      if (!(await bcrypt.compare(pin, user.has_pin))) {
-        console.log("PIN Mismatch: Incorrect old PIN");
-        return res.status(400).json({ error: "Incorrect old PIN" });
-      }
-    
-      return res.json({ status:true,message: "Old PIN verified successfully!" });
-  
-    } catch (error) {
-      console.error("Error:", error.message);
-      return res.status(500).json({ status: false, error: "Server error", details: error.message });
-    }
-  };
-  
+const verifyPin = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { pin } = req.body;
 
+    // Check if the user exists
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ status: false, error: "User not found!" });
+    }
+
+    // Check if PIN matches
+    const isPinMatch = await bcrypt.compare(pin, user.has_pin);
+    if (!isPinMatch) {
+      console.log("PIN Mismatch: Incorrect old PIN");
+      return res.status(400).json({ status: false, error: "Incorrect PIN!" });
+    }
+
+    return res.json({ status: true, message: "Old PIN verified successfully!" });
+
+  } catch (error) {
+    console.error("Server Error:", error.message);
+    return res.status(500).json({ status: false, error: "Server error", details: error.message });
+  }
+};
+
+  
 
 
   const updatePin = async (req, res) => {
@@ -227,33 +226,30 @@ const login = async (req, res) => {
       const userId = req.user.id;
       const { newPin, confirmPin } = req.body;
   
-      // Validate if both PINs are provided
       if (!newPin || !confirmPin) {
-        return res.status(400).json({ error: "Both PIN fields are required" });
+        return res.status(400).json({ status: false, error: "Both PIN fields are required!" });
       }
   
-
       if (newPin.length !== 4) {
-        return res.status(400).json({ error: "PIN must be exactly 4 digits" });
+        return res.status(400).json({ status: false, error: "PIN must be exactly 4 digits!" });
       }
   
-      // Check if new PIN and confirm PIN match
       if (newPin !== confirmPin) {
-        return res.status(400).json({ error: "New PIN and Confirm PIN do not match" });
+        return res.status(400).json({ status: false, error: "New PIN and Confirm PIN do not match!" });
       }
   
-      // Hash the new PIN before storing
       const hashedPin = await bcrypt.hash(newPin, 10);
   
-      // Update user PIN in database
-      await User.update({ pin: newPin,has_pin: hashedPin }, { where: { id: userId } });
+      await User.update({ pin: newPin, has_pin: hashedPin }, { where: { id: userId } });
   
       return res.json({ status: true, message: "PIN updated successfully!" });
+  
     } catch (error) {
       console.error("Error updating PIN:", error.message);
-      return res.status(500).json({ status: false,error: "Server error", details: error.message });
+      return res.status(500).json({ status: false, error: "Server error", details: error.message });
     }
   };
+  
   
 
 
