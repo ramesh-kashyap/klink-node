@@ -166,43 +166,90 @@ const myLevelTeamCount2 = async (userId, level = 3) => {
 //     }
 // };
 
+const LEVEL_PERCENTAGES = {
+  1: 20,
+  2: 10,
+  3: 5,
+  4: 3,
+  5: 2,
+  // Levels 6–10: 1%
+  6: 1,
+  7: 1,
+  8: 1,
+  9: 1,
+  10: 1,
+  // Levels 11–20: 0.5%
+  11: 0.5,
+  12: 0.5,
+  13: 0.5,
+  14: 0.5,
+  15: 0.5,
+  16: 0.5,
+  17: 0.5,
+  18: 0.5,
+  19: 0.5,
+  20: 0.5,
+  // Levels 21–30: 0.25%
+  21: 0.25,
+  22: 0.25,
+  23: 0.25,
+  24: 0.25,
+  25: 0.25,
+  26: 0.25,
+  27: 0.25,
+  28: 0.25,
+  29: 0.25,
+  30: 0.25,
+};
 
-const distributeCommissions = async (userId, amount) => {
-    let currentUser = await User.findByPk(userId);
-    let level = 1;
-  
-    while (currentUser && currentUser.sponsor && level <= 30) {
-      const referrer = await User.findByPk(currentUser.sponsor);
-  
-      if (!referrer) break;
-  
-      // Determine the percentage based on level
-      const percentage = LEVEL_PERCENTAGES[level] || 0;
-      const commission = (amount * percentage) / 100;
-  
-      if (commission > 0) {
-        // Ensure monthly earnings do not exceed 200% of initial deposit
-        const newMonthlyEarnings = referrer.monthlyEarnings + commission;
-        const earningLimit = (referrer.earnings * MAX_MONTHLY_EARNING_PERCENT) / 100;
-  
-        if (newMonthlyEarnings <= earningLimit) {
-          await referrer.update({
-            earnings: referrer.earnings + commission,
-            monthlyEarnings: newMonthlyEarnings,
-          });
-  
-          console.log(
-            `Level ${level}: User ${referrer.id} earned ${commission.toFixed(2)}`
-          );
-        } else {
-          console.log(`User ${referrer.id} exceeded monthly limit.`);
-        }
-      }
-  
-      currentUser = referrer;
-      level++;
+
+
+const distributeCommissions = async (req, res) => {
+  const { userId, amount } = req.body;
+    if (!userId || !amount) {
+      return res.status(400).json({ success: false, message: "userId and amount are required" });
     }
-  };
+  let currentUser = await User.findByPk(userId);
+  let level = 1;
+
+  while (currentUser && currentUser.sponsor && level <= 30) {
+    const referrer = await User.findByPk(currentUser.sponsor);
+
+    if (!referrer) break;
+
+    // Fetch the correct percentage from LEVEL_PERCENTAGES or default to 0
+    const percentage = LEVEL_PERCENTAGES[level] || 0;
+    const commission = (amount * percentage) / 100;
+
+    if (commission > 0) {
+      
+      await referrer.update({
+        earnings: referrer.earnings + commission,
+      });
+
+     
+      await Income.create({
+        user_id: referrer.id,
+        user_id_fk: currentUser.id,
+        amt: amount,
+        comm: commission,
+        remarks: "Level Income",
+        level,
+        ttime: new Date(),
+        type: "commission"
+      });
+
+      console.log(
+        `Level ${level}: User ${referrer.id} earned ${commission.toFixed(2)}`
+      );
+    }
+
+    currentUser = referrer;
+    level++;
+  }
+};
+
+
   
 
 
@@ -275,4 +322,4 @@ const getReferralLevels = async (userId, level = 1, result = []) => {
 
 
 
-module.exports = { fetchUserWithReferralIncome};
+module.exports = { fetchUserWithReferralIncome,distributeCommissions};

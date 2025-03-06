@@ -159,7 +159,7 @@ function processTickers(tickers) {
 // HTTP GET controller returning live data and computed differences
 function getLiveData(req, res) {
   const data = processTickers(latestTickers);
-  console.log('Data:', data);
+ 
   res.json(data);
 }
 

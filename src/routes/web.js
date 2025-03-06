@@ -27,6 +27,7 @@ router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
 router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
 // router.post("/team", authMiddleware,teamController.getTeam);
 router.post('/list', authMiddleware, teamController.fetchUserWithReferralIncome);
+router.post('/team-income',  teamController.distributeCommissions);
 router.post('/login', AuthController.login);
 router.get("/deposit-History", authMiddleware, InvestController.getHistory);
 router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
