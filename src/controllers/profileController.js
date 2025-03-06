@@ -18,13 +18,9 @@ const updateUserProfile = async (req, res) => {
         }
 
         // ✅ User ka name update karein
-        const [updatedRows] = await User.update({ user_name }, { where: { id: userId } });
+        const updatedRows = await User.update({ user_name }, { where: { id: userId } });
 
-        if (updatedRows === 0) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.json({ message: "Profile updated successfully", username });
+        res.json({ message: "Profile updated successfully", updatedRows });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -43,13 +39,11 @@ const updateUserFullName = async (req, res) => {
         }
 
         // ✅ User ka name update karein
-        const [updatedRows] = await User.update({ fullname }, { where: { id: userId } });
+        const updatedRows = await User.update({ fullname }, { where: { id: userId } });
 
-        if (updatedRows === 0) {
-            return res.status(404).json({ message: "User not found" });
-        }
+    
 
-        res.json({ message: "Profile updated successfully", fullname });
+        res.json({ message: "Profile updated successfully", updatedRows });
     } catch (error) {
         res.status(500).json({ error: "Something went wrong! Please try again." });
     }
