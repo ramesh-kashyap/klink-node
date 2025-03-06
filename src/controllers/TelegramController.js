@@ -120,7 +120,6 @@ const startTask = async (req, res) => {
     try {
         const { telegram_id, task_id } = req.body;
 
-        
         const [userTask, created] = await UserTask.findOrCreate({
             where: { telegram_id, task_id },
             defaults: { status: "pending" },
@@ -145,9 +144,13 @@ const startTask = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        const Euser = await User.findOne({where:{telegram_id:telegram_id}});
+        if(!Euser){
+            return res.status(404).json({ message: "Account Not Connected" });
+        }
         const existingTask = await UserTask.findOne({ where: { task_id: task_id, status: "completed", telegram_id: telegram_id } });
         if (existingTask) {
-            return res.status(400).json({ message: "You can't claim again" });
+            return res.status(400).json({ message: "You can't Claim Again" });
         }
         await TelegramUser.update(
             { coin_balance: user.coin_balance + task.reward },
@@ -315,7 +318,7 @@ const getTasks = async (req, res) => {
             { replacements: [telegramId, coins, id] }
         );  
         await TelegramUser.increment({coin_balance: coins }, { where: { telegram_id: telegramId } });
-        return res.json({ success: true, message: "Reward claimed successfully!" });
+        return res.json({ success: true, message: "🎉 Reward claimed successfully!" });
 
     } catch (error) {
         console.error("Error in claiming reward:", error);
@@ -340,6 +343,8 @@ const getTasks = async (req, res) => {
             type: QueryTypes.SELECT,
             replacements: { telegramId: user.telegram_id }, // Safe query binding
          });
+         const query1 = `SELECT COALESCE(SUM(coin_balance), 0) AS totalCoin FROM telegram_users`;
+         const result1 = await sequelize.query(query1, { type: QueryTypes.SELECT });    
          const Euser = await User.findOne({ where: { telegram_id: user.telegram_id } });
          if(!Euser){
             return res.json("User Not connected");
@@ -347,12 +352,13 @@ const getTasks = async (req, res) => {
          const tid =Euser.telegram_id;
             // console.log(Euser);
          const totalCoin = parseInt(result[0]?.totalCoin, 10) || 0; // Ensure totalCoin is an integer
-        //  const newBalance = parseFloat(user.balance || 0); // Ensure newBalance is a float
+         const totalallCoin = parseInt(result1[0]?.totalCoin, 10) || 0; // Ensure newBalance is a float
         //  const totalBalance = parseFloat(totalCoin) + newBalance;
          return res.json({
             telegram_id :tid,
             coin: totalCoin,
             coin_balance:total,
+            totalallCoin:totalallCoin,
          });     
     }
     catch(error){
