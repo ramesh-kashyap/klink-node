@@ -10,13 +10,12 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 exports.getUserIncome = async (req, res) => {
   try {
-    // Ensure user authentication middleware is used
     const userId = req.user.id; // Assuming req.user is set after authentication
 
+    if (!userId) {
+      return res.status(200).json({ error: "User Id Not found" });
+    }
 
-    if (!userId || !userId) {
-      return res.status(200).json({ error: " User Id Not  found" });
-  }
     console.log(`Fetching income for user ID: ${userId}`);
 
     const incomeData = await Income.findAll({
@@ -24,6 +23,7 @@ exports.getUserIncome = async (req, res) => {
         user_id: userId, // Filter by logged-in user's ID
       },
       order: [["id", "DESC"]], // Order by id in descending order
+      limit: 5, // ✅ Fetch only the latest 5 records
       raw: true, // Returns plain JSON data without extra Sequelize metadata
     });
 

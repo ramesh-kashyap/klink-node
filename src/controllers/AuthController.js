@@ -197,15 +197,13 @@ const login = async (req, res) => {
       const userId = req.user.id;
       const { pin } = req.body;
   
-      console.log("User ID:", userId);
-      console.log("Received PIN:", pin);
+      
   
       const user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
   
-      console.log("Stored PIN in DB:", pin);
   
       // Direct comparison (for plain text)
       if (!(await bcrypt.compare(pin, user.has_pin))) {
