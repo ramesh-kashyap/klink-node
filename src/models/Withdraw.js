@@ -8,7 +8,7 @@ const Withdraw = sequelize.define('Withdraw', {
     status: { type: DataTypes.ENUM('Approved', 'Pending', 'Rejected'), defaultValue: 'Pending' },
     created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW } // ✅ Manually added
 
-    status: { type: DataTypes.ENUM('Active', 'Pending', 'Reject'), defaultValue: 'Pending' },
+   ,
     wdate: {
         type: DataTypes.DATEONLY,
         allowNull: false,
