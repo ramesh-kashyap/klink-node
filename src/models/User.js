@@ -67,8 +67,12 @@ const User = sequelize.define('User', {
         type: DataTypes.INTEGER,
         allowNull: true
     }
-
-    
+,
+    package: {
+        type: DataTypes.DOUBLE(10, 2),  // Double type with 2 decimal places
+        allowNull: false,
+        defaultValue: 0.00
+    }
     // balance: { type: DataTypes.FLOAT, defaultValue: 0 },
 }, {
     tableName: 'users',

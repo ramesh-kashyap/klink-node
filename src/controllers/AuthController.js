@@ -98,10 +98,9 @@ const login = async (req, res) => {
       // Destructure username and password from the request body.
       const { email, password } = req.body;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-     
+
       if (!emailRegex.test(email)) {
-        console.log('Invalid email address');
-        return res.status(400).json({ error: 'Invalid email address.' });
+          console.log('Invalid email address');
       }
       if (!email || !password) {
         console.log('User not found!');
