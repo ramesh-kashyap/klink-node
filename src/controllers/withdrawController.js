@@ -5,6 +5,7 @@ const Otp = require('../models/Otp');
 const { Op } = require('sequelize');
 const jwt = require("jsonwebtoken");
 const authMiddleware = require('../middleware/authMiddleware');
+const { calculateAvailableBalance } = require("../helper/helper");
 const crypto = require("crypto");
 
 
@@ -48,34 +49,56 @@ function generateNumericOtp(length = 6, validityInMinutes = 10) {
    */
   const generateOtp = async (req, res) => {
     try {
-     
-        const userId = req.user.id; 
-        // Validate input fields
-        if (!req.user || !req.user.id) {
-          return res.status(401).json({  status: false,
-              message: "Unauthorized: User not found" });
-        }
+      // Check if user is authenticated
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({
+          status: false,
+          message: "Unauthorized: User not found"
+        });
+      }
   
+      const userId = req.user.id; // Authenticated User ID
+  
+      // Generate a new OTP and expiration time
       const { otp, expiresAt } = generateNumericOtp();
   
-      // Save OTP record (in production, you might delete previous pending OTPs)
-      const otpRecord = await Otp.create({
-        otp,
-        userId,
-        expiresAt,
-        status: "Pending",
+      // Look for an existing pending OTP record for this user
+      const existingOtpRecord = await Otp.findOne({
+        where: { userId, status: "Pending" }
       });
   
-      // In production, you would send the OTP to the user via SMS or email.
-      // For testing purposes, we return the OTP in the response.
-      return res.status(200).json({
-        status: true,
-        message: "OTP generated successfully.",
-        data: {
-          otp, // Remove or mask this in production
+      if (existingOtpRecord) {
+        // Update the existing record with new OTP and expiry
+        existingOtpRecord.otp = otp;
+        existingOtpRecord.expiresAt = expiresAt;
+        await existingOtpRecord.save();
+  
+        return res.status(200).json({
+          status: true,
+          message: "OTP updated successfully.",
+          data: {
+            otp, // Remove or mask this in production
+            expiresAt,
+          },
+        });
+      } else {
+        // Create a new OTP record since none exists
+        const otpRecord = await Otp.create({
+          otp,
+          userId,
           expiresAt,
-        },
-      });
+          status: "Pending",
+        });
+  
+        return res.status(200).json({
+          status: true,
+          message: "OTP generated successfully.",
+          data: {
+            otp, // Remove or mask this in production
+            expiresAt,
+          },
+        });
+      }
     } catch (error) {
       console.error("Error generating OTP:", error);
       return res.status(500).json({
@@ -84,6 +107,7 @@ function generateNumericOtp(length = 6, validityInMinutes = 10) {
       });
     }
   };
+  
   
 
 
@@ -97,6 +121,8 @@ const withdraw = async (req, res) => {
         return res.status(401).json({  status: false,
             message: "Unauthorized: User not found" });
       }
+      
+      const balanceData = await calculateAvailableBalance(userId);
       const MIN_WITHDRAWAL = 20;
       if (Number(amount) < MIN_WITHDRAWAL) {
         return res.status(400).json({
@@ -135,6 +161,12 @@ const withdraw = async (req, res) => {
           status: false,
           message:
             "Invalid amount. Please enter a valid number greater than zero.",
+        });
+      }
+      if (balanceData.available_balance <= Number(amount)) {
+        return res.status(400).json({ 
+          status: false, 
+          message: "Insufficient available balance for OTP generation or withdrawal" 
         });
       }
   

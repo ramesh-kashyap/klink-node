@@ -22,6 +22,10 @@ const User = sequelize.define('User', {
         allowNull: false,
         unique: true
     },
+    user_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
    
     fullname: {
         type: DataTypes.STRING,
@@ -48,6 +52,10 @@ const User = sequelize.define('User', {
         allowNull: true
     },
     PSR: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    pin: {
         type: DataTypes.STRING,
         allowNull: false
     },

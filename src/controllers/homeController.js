@@ -3,7 +3,7 @@ const News = require("../models/News");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 // Predefined Binance symbols (example with 59 symbols total)
-const { Income, Investment, Withdraw } = require("../models");
+const { calculateAvailableBalance } = require("../helper/helper");
 const binanceSymbols = {
   btc: 'btcusdt',
   eth: 'ethusdt',
@@ -159,7 +159,7 @@ function processTickers(tickers) {
 // HTTP GET controller returning live data and computed differences
 function getLiveData(req, res) {
   const data = processTickers(latestTickers);
-  console.log('Data:', data);
+ 
   res.json(data);
 }
 
@@ -206,26 +206,14 @@ const getAvailableBalance = async (req, res) => {
     }
 
     const userId = req.user.id; // Authenticated User ID
+    const balanceData = await calculateAvailableBalance(userId);
+    
 
-    // ✅ Fetch all necessary values in parallel for better performance
-    const [totalIncome, totalInvestment, totalWithdraw] = await Promise.all([
-      Income.sum("comm", { where: { user_id: userId } }).then(sum => sum || 0),
-      Investment.sum("amount", { where: { user_id: userId } }).then(sum => sum || 0),
-      Withdraw.sum("amount", { where: { user_id: userId } }).then(sum => sum || 0)
-    ]);
-
-    // ✅ Available Balance Calculation
-    const availableBalance = totalIncome - totalWithdraw;
-
-    // ✅ Send JSON response
+    
     res.status(200).json({
       status: true,
       message: "Balance fetched successfully",
-      data: {
-        available_balance: availableBalance,
-        total_withdrawn: totalWithdraw,
-        total_investment: totalInvestment
-      }
+      data:balanceData,
     });
 
   } catch (error) {
