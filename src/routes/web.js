@@ -24,7 +24,9 @@ router.post('/set-pin', AuthController.setPin);
 
 router.get("/user-income", authMiddleware, IncomeController.getUserIncome);
 router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
-router.get("/Roi-income", authMiddleware, IncomeController.getRoiIncome);
+router.get("/Direct-income", authMiddleware, IncomeController.getDirectIncome);
+router.get("/Direct-user", authMiddleware, IncomeController.getReferralUser);
+
 // router.post("/team", authMiddleware ,teamController.getTeam);
 router.get('/list', authMiddleware, teamController.listUsers);
 // // router.post("/team", authMiddleware,teamController.getTeam);
