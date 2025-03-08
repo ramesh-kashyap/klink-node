@@ -45,6 +45,8 @@ router.put('/updateFullName', authMiddleware, profileController.updateUserFullNa
 router.post("/withdraw", authMiddleware, withdrawController.withdraw);
 router.post("/verify-otp", authMiddleware, withdrawController.verifyOtp);
 router.post("/generate-otp", authMiddleware, withdrawController.generateOtp);
+// router.get('/balance',authMiddleware, userController.getAvailableBalance);
+
 
 
 
