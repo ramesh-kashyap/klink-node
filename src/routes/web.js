@@ -7,7 +7,7 @@ const InvestController = require("../controllers/InvestController");
 const withdrawController = require("../controllers/withdrawController");
 const profileController = require("../controllers/profileController");
 
-
+const userController = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware"); // JWT Auth Middleware
 const  homeController= require('../controllers/homeController');
@@ -39,7 +39,7 @@ router.get('/news',authMiddleware, homeController.getAllNews);
 router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
 router.get('/getNotifications',authMiddleware, homeController.getNotifications);
 router.post('/updatePin',authMiddleware, AuthController.updatePin);
-
+router.get('/user-incomes',authMiddleware, userController.userIncomes);
 router.put('/updateUsername', authMiddleware, profileController.updateUserProfile);
 router.put('/updateFullName', authMiddleware, profileController.updateUserFullName);
 router.post("/withdraw", authMiddleware, withdrawController.withdraw);

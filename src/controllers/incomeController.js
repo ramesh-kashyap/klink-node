@@ -4,6 +4,7 @@ const { User, Investment, Withdraw, Income } = require('../models');
 const { Op } = require('sequelize');
 const jwt = require("jsonwebtoken");
 const authMiddleware = require('../middleware/authMiddleware');
+const Transaction = require("../models/Transaction");
 
 
 
@@ -18,9 +19,12 @@ exports.getUserIncome = async (req, res) => {
 
     console.log(`Fetching income for user ID: ${userId}`);
 
-    const incomeData = await Income.findAll({
+    const incomeData = await Transaction.findAll({
       where: {
-        user_id: userId, // Filter by logged-in user's ID
+        user_id: userId,
+        remark: { 
+          [Op.or]: ["Direct Income", "Level Income", "Roi Income"] // ✅ Multiple Income Types
+        }
       },
       order: [["id", "DESC"]], // Order by id in descending order
       limit: 5, // ✅ Fetch only the latest 5 records
@@ -31,11 +35,10 @@ exports.getUserIncome = async (req, res) => {
 
     return res.status(200).json({ success: true, data: incomeData });
   } catch (error) {
-    console.error("Error fetching income data:", error.stack);
+    console.error("Error fetching income data:", error);
     return res.status(500).json({ error: "Server error", details: error.message });
   }
 };
-
 
 exports.getLevelIncome = async (req, res) => {
     try {
