@@ -35,7 +35,7 @@ exports.getUserIncome = async (req, res) => {
 
     return res.status(200).json({ success: true, data: incomeData });
   } catch (error) {
-    console.error("Error fetching income data:", error.stack);
+    console.error("Error fetching income data:", error);
     return res.status(500).json({ error: "Server error", details: error.message });
   }
 };
