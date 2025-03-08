@@ -6,6 +6,7 @@ const Income = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     user_id_fk: { type: DataTypes.INTEGER, allowNull: false },
+    user_id: { type: DataTypes.INTEGER, foreignKey: true },
     comm: { type: DataTypes.FLOAT, allowNull: false },
     remarks: { type: DataTypes.STRING, allowNull: true },
     today_reward: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
