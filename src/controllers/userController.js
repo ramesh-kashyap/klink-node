@@ -1,43 +1,56 @@
 const { User, Investment, Withdraw, Income } = require('../models');
 const { Op } = require('sequelize');
+const { calculateAvailableBalance } = require("../helper/helper");
 const userIncomes = async (req, res)=>{
     try {
         const userId = req.user.id; 
+        
         if (!userId) {
             console.log("User ID is missing from token");
             return res.status(400).json({ error: "User ID is missing from token" });
         }
+
+        const balanceData = await calculateAvailableBalance(userId);
         const totalInvestmentAmount = await Investment.sum('amount', {
             where: {
-              id: userId,          // Fetch records where id matches userId
-              roiCandition: 0       // Filter by roicandtion = 0
+                user_id: userId, // Fetch records where id matches userId
+              roiCandition: 0 // Filter by roiCandition = 0
             }
-          });
+          })|| 0;
+          console.log("Total Investment Amount:", totalInvestmentAmount); // Log result to verify
+          
           const totalRoiAmount = await Income.sum('comm', {
             where: {
-              id: userId,          // Fetch records where id matches userId
-               // Filter by roicandtion = 0
-            }
-          });
+              user_id: userId, // Fetch records where id matches userId
+              remarks: 'Roi Income'
+            },
+            logging: console.log
+          })|| 0;
+          console.log("Total ROI Amount:", totalRoiAmount); // Log result to verify
+          
           const totalTeamAmount = await Income.sum('comm', {
             where: {
-              id: userId,          // Fetch records where id matches userId
-              remarks: { 
+                user_id: userId, // Fetch records where id matches userId
+              remarks: {
                 [Op.or]: ['Level Income', 'Direct Income']  // Filter by 'Level Income' OR 'Direct Income'
               }
             }
-          });
-        const totalWithdrawlAmount = await Withdraw.sum('amount',{
-          where: { id: userId } // Fetch all users with id = 12 (typically returns 1)
-        });
-        
+          })|| 0;
+          console.log("Total Team Amount:", totalTeamAmount); // Log result to verify
+          
+          const totalWithdrawlAmount = await Withdraw.sum('amount', {
+            where: { user_id: userId } // Fetch all users with id = userId
+          })|| 0;
+          console.log("Total Withdrawal Amount:", totalWithdrawlAmount); // Log result to verify
+          
         res.json({
           status: true,
           data: {
             totalInvestmentAmount,
             totalRoiAmount,
             totalTeamAmount,
-            totalWithdrawlAmount
+            totalWithdrawlAmount,
+            balanceData
           },
           
           message: 'Data Fetch Successfully'
