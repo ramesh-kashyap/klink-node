@@ -16,13 +16,13 @@ const userIncomes = async (req, res)=>{
           const totalRoiAmount = await Income.sum('comm', {
             where: {
               id: userId,          // Fetch records where id matches userId
-              roicandtion: 0       // Filter by roicandtion = 0
+               // Filter by roicandtion = 0
             }
           });
           const totalTeamAmount = await Income.sum('comm', {
             where: {
               id: userId,          // Fetch records where id matches userId
-              remark: { 
+              remarks: { 
                 [Op.or]: ['Level Income', 'Direct Income']  // Filter by 'Level Income' OR 'Direct Income'
               }
             }
