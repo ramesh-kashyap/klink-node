@@ -7,6 +7,8 @@ const Transaction = sequelize.define('Transaction', {
 
     user_id_fk: { type: DataTypes.INTEGER, allowNull: false },
     amount: { type: DataTypes.FLOAT, allowNull: false },
+    comm: { type: DataTypes.FLOAT, allowNull: false },
+
     payment_mode: { type: DataTypes.INTEGER,  defaultValue: 0 },
     remark: { type: DataTypes.STRING, allowNull: false },
 
