@@ -428,4 +428,4 @@ const listUsers = async (req, res) => {
 
 
 
-module.exports = { getTeam ,listUsers};
+module.exports = { listUsers};
