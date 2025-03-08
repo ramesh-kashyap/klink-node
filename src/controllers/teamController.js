@@ -366,7 +366,7 @@ const listUsers = async (req, res) => {
       const { selected_level, limit = 4, page = 1, search } = req.query;
       const user = req.user; 
       const myLevelTeam = await myLevelTeamCount2(user.id);
-
+      const max_length = myLevelTeam ? Object.keys(myLevelTeam).length : 0;
       let genTeam = {};
       if (selected_level > 0) {
           genTeam = myLevelTeam[selected_level] || [];
@@ -414,6 +414,7 @@ const listUsers = async (req, res) => {
           total: count,
           page: parseInt(page),
           limit: parseInt(limit),
+          max_length,
           status: true,
       });
   } catch (error) {
