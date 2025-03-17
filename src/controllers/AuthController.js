@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
 const otpStore = {}; 
+const userSessions = {}; 
+module.exports = { userSessions };
 
 
 // Register User Function
@@ -237,17 +239,39 @@ const logout = async (req, res) => {
 };
 
 
-const loginWithTelegram = async (req, res) => {
-    // console.log(req.body);
-    try {
-        const { telegram_id, tusername, tname, tlastname } = req.body;
+const TelegramBot = require('node-telegram-bot-api');
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true })
+bot.onText(/\/start (\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id; 
+    const referrerId = match[1]; // Extract referral ID
 
-        // console.log("🔹 Telegram ID:", telegram_id);
+    console.log("Chat ID:", chatId, "Referrer ID:", referrerId);
+    userSessions[chatId] = { referrerId };
+    console.log("Stored Data:", userSessions);
+        
+});
+
+const loginWithTelegram = async (req, res) => {
+    console.log(req.body);
+    try {        
+        const { telegram_id, tusername, tname, tlastname, referrerId} = req.body;
+
+        //  console.log( chatId, referrerId);       
 
         if (!telegram_id) {
             return res.status(200).json({ message: "Telegram ID is required" });
         }
-
+        let sponsor = null;
+        // console.log("spons",userSessions[telegram_id]);
+        if (userSessions[telegram_id]) {
+         const referrerId = userSessions[telegram_id].referrerId;
+        
+            if (referrerId) {
+                sponsor = referrerId;
+            }
+        }
+        
+        console.log("Sponsor ID:", sponsor);
         // ✅ Check if user exists
         const queryCheckUser = `
             SELECT * FROM telegram_users WHERE telegram_id = :telegram_id
@@ -275,12 +299,12 @@ const loginWithTelegram = async (req, res) => {
         } else {
             // ✅ Create new user
             const queryInsertUser = `
-                INSERT INTO telegram_users (telegram_id, tusername, tname, tlastname) 
-                VALUES (:telegram_id, :tusername, :tname, :tlastname)
+                INSERT INTO telegram_users (telegram_id, tusername, tname, tlastname, sponsor) 
+                VALUES (:telegram_id, :tusername, :tname, :tlastname, :sponsor)
             `;
 
             const [insertResult] = await sequelize.query(queryInsertUser, {
-                replacements: { telegram_id, tusername, tname, tlastname },
+                replacements: { telegram_id, tusername, tname, tlastname, sponsor},
                 type: QueryTypes.INSERT,
             });
 

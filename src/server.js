@@ -60,7 +60,7 @@ app.get("/register", (req, res) => {
 // **Telegram Webhook Route**
 app.post("/webhook", async (req, res) => {
     const { message } = req.body;
-
+      console.log(message);
     if (message) {
         const chatId = message.chat.id;
         const userText = message.text;
@@ -89,6 +89,9 @@ app.post("/webhook", async (req, res) => {
 // };
 
 // **Set Webhook on Server Start**
+
+
+
 const setWebhook = async () => {
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_WEBHOOK_URL) {
         console.error("Telegram bot token or webhook URL is missing!");
@@ -105,6 +108,21 @@ const setWebhook = async () => {
     // }
     
 };
+ 
+// const {loginWithTelegram } = require('./controllers/AuthController');
+
+// const { userSessions } = require('./controllers/AuthController');
+// const TelegramBot = require('node-telegram-bot-api');
+// const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true })
+// bot.onText(/\/start (\d+)/, async (msg, match) => {
+//     const chatId = msg.chat.id; 
+//     const referrerId = match[1]; // Extract referral ID
+
+//     console.log("Chat ID:", chatId, "Referrer ID:", referrerId);
+//     userSessions[chatId] = { referrerId };
+//     console.log("Stored Data:", userSessions);
+        
+// });
 
 app.get("/register", (req, res) => {
     res.send({ message: "Hello, this is a test!" });
