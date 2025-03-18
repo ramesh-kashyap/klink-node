@@ -3,7 +3,7 @@ const { QueryTypes } = require('sequelize');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User"); // User Model Import Karein
-
+const  resetpass = require('../models/resetpass');
 require('dotenv').config();
 
 const path = require("path");
@@ -146,8 +146,136 @@ const login = async (req, res) => {
   };
   
 
+  const forget = async (req,res) =>{
+    try {
+      const { email } = req.body;
+         
+      // Find the user using Sequelize
+      const user = await User.findOne({ where: { email } });
+       
+      if (!user) {
+        console.log('User not found!')
+        return res.status(400).json({ error: "User not found!" });
 
+      }
+      console.log("user:",user );
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      // const expiresAt = new Date(Date.now() + validityInMinutes * 60000);
+      const isnot = await resetpass.findOne({
+        where: { email: user.email }  // ✅ Correct usage of WHERE clause
+    });
+    
+        if(!isnot){
+       await resetpass.create({
+        email: user.email,
+        token: otp, 
+      });
+    }
+    else{
+      await resetpass.update(
+        { token: otp }, 
+        { where: { email: user.email } }  // ✅ Correct WHERE condition
+    );
+    
+
+    }
+
+      console.log(`OTP for ${email}: ${otp}`);
+
+      return res.status(200).json({
+        status:true,
+        message: "Otp Send successful!",
+        email,
+      });
+    } catch (error) {
+      console.error("Error:", error.message);
+      return res.status(500).json({ status:false , error: "Server error", details: error.message });
+    }
+  };
+   
+  const forgetOtp = async (req, res) => {
+    try {
+      const { email, pin } = req.body;
+     
+      
+      // Validate input
+      if (!email || !pin) {
+        return res.status(400).json({
+          status: false,
+          message: "Email and OTP are required.",
+        });
+      }
   
+      // Retrieve a pending OTP record matching the submitted email and OTP
+      const otpRecord = await resetpass.findOne({
+        where: { email },
+      });
+  
+      if (!otpRecord) {
+        return res.status(400).json({
+          status: false,
+          message: "Invalid OTP.",
+        });
+      }
+  
+      // Optionally, perform additional business logic (e.g., update user status)
+  
+      return res.status(200).json({
+        status: true,
+        message: "OTP verified successfully.",
+      });
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      return res.status(500).json({
+        status: false,
+        message: error.message || "Internal Server Error.",
+      });
+    }
+  };
+
+  const confirmPass = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+     
+      
+      // Validate input
+      if (!email || !password) {
+        return res.status(400).json({
+          status: false,
+          message: "Email and OTP are required.",
+        });
+      }
+  
+      // Retrieve a pending OTP record matching the submitted email and OTP
+      const otpRecord = await User.findOne({
+        where: { email },
+      });
+  
+      if (!otpRecord) {
+        return res.status(400).json({
+          status: false,
+          message: "User Not found",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(password.toString(), 10);
+      await User.update(
+        { password: hashedPassword, PSR :password}, 
+        { where: { email: email } }  // ✅ Correct WHERE condition
+    );
+      // Optionally, perform additional business logic (e.g., update user status)
+  
+      return res.status(200).json({
+        status: true,
+        message: "Pasword updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      return res.status(500).json({
+        status: false,
+        message: error.message || "Internal Server Error.",
+      });
+    }
+  };
   
 
   const setPin = async (req, res) => {
@@ -330,5 +458,5 @@ const loginWithTelegram = async (req, res) => {
 };
 
 
-module.exports = { login, register, logout,loginWithTelegram ,verifyPin,updatePin,setPin };
+module.exports = { login, register, logout,loginWithTelegram ,verifyPin,updatePin,setPin, forget,forgetOtp ,confirmPass};
 

@@ -21,12 +21,13 @@ const helper = require('../helper/helper');
 router.post('/google', googleController.verifyGoogleToken);
 router.post('/register', AuthController.register);
 router.post('/set-pin', AuthController.setPin);
-
+router.post('/forgot', AuthController.forget);
+router.post('/forget-otp', AuthController.forgetOtp);
 router.get("/user-income", authMiddleware, IncomeController.getUserIncome);
 router.get("/level-income", authMiddleware, IncomeController.getLevelIncome);
 router.get("/Direct-income", authMiddleware, IncomeController.getDirectIncome);
 router.get("/Direct-user", authMiddleware, IncomeController.getReferralUser);
-
+router.post('/conformPass', AuthController.confirmPass);
 // router.post("/team", authMiddleware ,teamController.getTeam);
 router.get('/list', authMiddleware, teamController.listUsers);
 // // router.post("/team", authMiddleware,teamController.getTeam);
