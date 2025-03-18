@@ -42,6 +42,9 @@ router.get('/getBalance',authMiddleware, homeController.getAvailableBalance);
 router.get('/getNotifications',authMiddleware, homeController.getNotifications);
 router.post('/updatePin',authMiddleware, AuthController.updatePin);
 router.get('/user-incomes',authMiddleware, userController.userIncomes);
+router.get('/all-income', authMiddleware, IncomeController.allIncome);
+
+
 router.put('/updateUsername', authMiddleware, profileController.updateUserProfile);
 router.put('/updateFullName', authMiddleware, profileController.updateUserFullName);
 router.post("/withdraw", authMiddleware, withdrawController.withdraw);

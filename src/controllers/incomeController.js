@@ -65,6 +65,47 @@ exports.getLevelIncome = async (req, res) => {
     }
   };
   
+  exports.allIncome = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is missing from token" });
+        }
+
+        const { search = "", page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        // Filter condition with search query
+        const whereCondition = {
+            user_id: userId,
+            remark: { 
+                [Op.like]: `%${search}%` // Search by 'remark' field (adjust field if needed)
+            }
+        };
+
+        const { count, rows: income } = await Income.findAndCountAll({
+            where: whereCondition,
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['created_at', 'DESC']] // Sort by recent transactions
+        });
+
+        const totalPages = Math.ceil(count / limit);
+
+        if (!income.length) {
+            return res.status(404).json({ error: "No transactions found." });
+        }
+
+        return res.status(200).json({ 
+            success: true,
+            data: income,
+            totalPages 
+        });
+    } catch (error) {
+        console.error("Error fetching income:", error.message);
+        return res.status(500).json({ error: "Server error", details: error.message });
+    }
+};
 
 
   exports.getDirectIncome = async (req, res) => {
