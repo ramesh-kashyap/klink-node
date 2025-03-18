@@ -1,6 +1,6 @@
 
 const db = require("../config/connectDB");
-const { User, Investment, Withdraw, Income } = require('../models');
+const { User, Investment, Withdraw, Income,Transaction } = require('../models');
 const Otp = require('../models/Otp');
 const { Op } = require('sequelize');
 const jwt = require("jsonwebtoken");
@@ -123,13 +123,15 @@ const withdraw = async (req, res) => {
       }
       
       const balanceData = await calculateAvailableBalance(userId);
+      const requestedAmount = Number(amount);
       const MIN_WITHDRAWAL = 20;
-      if (Number(amount) < MIN_WITHDRAWAL) {
+      if (isNaN(requestedAmount) || requestedAmount < MIN_WITHDRAWAL) {
         return res.status(400).json({
           status: false,
-          message: `Minimum withdrawal amount is ${MIN_WITHDRAWAL}.`
+          message: `Minimum withdrawal amount is ${MIN_WITHDRAWAL}.`,
         });
       }
+
       if ( !walletAddress || !amount) {
         return res.status(400).json({
           status: false,
@@ -169,7 +171,11 @@ const withdraw = async (req, res) => {
           message: "Insufficient available balance for OTP generation or withdrawal" 
         });
       }
-  
+
+    const adminFeePercentage = 0.2;
+    const adminFee = requestedAmount * adminFeePercentage;
+    const netAmount = requestedAmount - adminFee;
+
       // Log the withdrawal request (simulate processing)
       console.log(
         `Received  Wallet Address: ${walletAddress}, Amount: ${amount}`
@@ -186,16 +192,31 @@ const withdraw = async (req, res) => {
         user_id: userId,     // User ID from the authenticated user
         user_id_fk: user.username, // Another identifier for the user
         amount,               // Original amount
-                 
+        payable_amt: netAmount, 
+        charge: adminFee,     
         account: walletAddress,              // Account details
-        
         status: "Pending",    // Default status
         walletType: 1,        // Assuming 1 represents a particular wallet type
         wdate,                // Current date in YYYY-MM-DD format
       };
+
+      const data2 = {
+        transaction_id: txn_id,               // Unique transaction ID
+        user_id: userId,     // User ID from the authenticated user
+        user_id_fk: user.username, // Another identifier for the user
+        amount,    
+        remark:"Withdraw"  ,         // Original amount
+        payable_amt: netAmount, 
+        charge: adminFee,     
+        account: walletAddress,              // Account details
+        status: "Pending",    // Default status
+                // Assuming 1 represents a particular wallet type
+        sdate:wdate,                // Current date in YYYY-MM-DD format
+      };
   
       // Save the data to the database using Sequelize
       const withdrawal = await Withdraw.create(data);
+      await Transaction.create(data2);
      
       return res.status(200).json({
         status: true,

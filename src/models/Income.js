@@ -13,7 +13,7 @@ const Income = sequelize.define(
     hash_rate: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 0.0 },
     status: { type: DataTypes.STRING, allowNull: false, defaultValue: "pending" },
     total_uptime: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-    type: { type: DataTypes.STRING, allowNull: false },
+    type: { type: DataTypes.STRING, allowNull: true },
     created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW } // ✅ Manually added
 
   },

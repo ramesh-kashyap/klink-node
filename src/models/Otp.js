@@ -9,7 +9,11 @@ const sequelize = require('../config/connectDB');
       },
       userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: true, // make sure email is required
       },
       status: {
         type: DataTypes.STRING,

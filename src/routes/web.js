@@ -15,7 +15,7 @@ const passport = require('passport');
 
 const googleController = require('../controllers/googleController');
 const teamController = require('../controllers/teamController');
-
+const helper = require('../helper/helper');
 
 
 router.post('/google', googleController.verifyGoogleToken);
@@ -34,6 +34,7 @@ router.get('/list', authMiddleware, teamController.listUsers);
 // router.post('/team-income',  teamController.distributeCommissions);
 router.post('/login', AuthController.login);
 router.get("/deposit-History", authMiddleware, InvestController.getHistory);
+router.post("/stake-record", authMiddleware, InvestController.StakeRecord);
 router.get("/withdraw-History", authMiddleware, withdrawController.getWithdrawHistory);
 router.post('/verify-pin',authMiddleware, AuthController.verifyPin);
 router.get('/live-data',authMiddleware, homeController.getLiveData);
@@ -50,6 +51,8 @@ router.put('/updateFullName', authMiddleware, profileController.updateUserFullNa
 router.post("/withdraw", authMiddleware, withdrawController.withdraw);
 router.post("/verify-otp", authMiddleware, withdrawController.verifyOtp);
 router.post("/generate-otp", authMiddleware, withdrawController.generateOtp);
+router.post("/authverify-otp",  helper.verifyOtp);
+router.post("/authgenerate-otp",  helper.generateOtp);
 // router.get('/balance',authMiddleware, userController.getAvailableBalance);
 
 
