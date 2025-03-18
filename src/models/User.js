@@ -7,9 +7,10 @@ const User = sequelize.define('User', {
     sponsor: { type: DataTypes.INTEGER, allowNull: true }, // Parent user (sponsor)
     active_status: { type: DataTypes.ENUM('Active', 'Inactive'), defaultValue: 'Inactive' },
     jdate: { type: DataTypes.DATEONLY },
+    adate: { type: DataTypes.DATEONLY , allowNull: true },
     date_of_birth: {
         type: DataTypes.DATEONLY,
-        allowNull: false
+        allowNull: true
     },  
     
     email: {
@@ -24,7 +25,7 @@ const User = sequelize.define('User', {
     },
     user_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     },
    
     fullname: {
@@ -57,7 +58,7 @@ const User = sequelize.define('User', {
     },
     pin: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     TPSR: {
         type: DataTypes.STRING,

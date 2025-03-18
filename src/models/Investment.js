@@ -8,7 +8,36 @@ const Investment = sequelize.define('Investment', {
     amount: { type: DataTypes.FLOAT, allowNull: false },
     roiCandition: {
         type: DataTypes.INTEGER, // Or DataTypes.FLOAT if it needs to be a float
-        allowNull: false, // Adjust based on whether it's a required field
+        allowNull: true, // Adjust based on whether it's a required field
+      },
+      amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      active_from: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      sdate: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
+      walletType: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      token: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      orderId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      transaction_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true, 
       },
     status: { type: DataTypes.ENUM('Active', 'Inactive'), defaultValue: 'Inactive' },
     created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW } // ✅ Manually added

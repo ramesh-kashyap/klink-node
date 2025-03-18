@@ -10,6 +10,14 @@ const Withdraw = sequelize.define('Withdraw', {
     created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW } // ✅ Manually added
 
    ,
+   payable_amt: {
+    type: DataTypes.DECIMAL(18, 8), // Net amount after admin fee deduction
+    allowNull: true,
+  },
+  charge: {
+    type: DataTypes.DECIMAL(18, 8), // Admin fee deducted
+    allowNull: true,
+  },
     wdate: {
         type: DataTypes.DATEONLY,
         allowNull: false,

@@ -15,9 +15,9 @@ const register = async (req, res) => {
       console.log("start");
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const { fullname, lastname,  date_of_birth, email, password, referralCode } = req.body;
+        const { fullname, lastname,   email, password, referralCode } = req.body;
        
-        if (!fullname || !lastname || ! date_of_birth || !email || !password || !referralCode) {
+        if (!fullname || !lastname ||  !email || !password || !referralCode) {
             console.log('3');
             return res.status(400).json({ error: "All fields are required!" });
         }   
@@ -65,7 +65,7 @@ const register = async (req, res) => {
         const newUser = await User.create({
             fullname:fullname,
             lastname:lastname,
-            date_of_birth:  date_of_birth,
+            
             email:email,
             username,
             password: hashedPassword,
@@ -76,9 +76,9 @@ const register = async (req, res) => {
             level: sponsorLevel + 1,
             ParentId: parentId,
         });
-    console.log(newUser);
+ 
     
-        return res.status(201).json({status:true ,message: "User registered successfully!", username: newUser.username });
+        return res.status(201).json({status:true , username: newUser.username });
     } catch (error) {
         console.error("Error:", error.message);
         return res.status(500).json({ error: "Server error", details: error.message });
@@ -103,6 +103,7 @@ const login = async (req, res) => {
 
       if (!emailRegex.test(email)) {
           console.log('Invalid email address');
+          return res.status(400).json({ error: "Invalid email address" });
       }
       if (!email || !password) {
         console.log('User not found!');
