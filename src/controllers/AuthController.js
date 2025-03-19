@@ -10,79 +10,74 @@ const path = require("path");
 
 // Register User Function
 const register = async (req, res) => {
-  console.log(req.body);
-    try {
-      console.log("start");
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  try {
+      const { name, phone, email, password, sponsor } = req.body;
+      
+      if (!name || !phone || !email || !password || !sponsor) {
+          return res.status(400).json({ error: "All fields are required!" });
+      }
 
-        const { fullname, lastname,   email, password, referralCode } = req.body;
-       
-        if (!fullname || !lastname ||  !email || !password || !referralCode) {
-            console.log('3');
-            return res.status(400).json({ error: "All fields are required!" });
-        }   
+      // Check if user already exists
+      const [existingUser] = await db.execute(
+          "SELECT * FROM users WHERE email = ? OR phone = ?", [email, phone]
+      );
+      
+      if (existingUser.length > 0) {
+          return res.status(400).json({ error: "Email or Phone already exists!" });
+      }
 
+      // Check if sponsor exists
+      const [sponsorUser] = await db.execute(
+          "SELECT * FROM users WHERE username = ?", [sponsor]
+      );
+      if (sponsorUser.length === 0) {
+          return res.status(400).json({ error: "Sponsor does not exist!" });
+      }
 
-     
-        if (!emailRegex.test(email)) {
-          console.log('Invalid email address');
-          return res.status(400).json({ error: 'Invalid email address.' });
-        }
+      // Generate username & transaction password
+      const username = Math.random().toString(36).substring(2, 10);
+      const tpassword = Math.random().toString(36).substring(2, 8);
 
+      // Hash passwords
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedTPassword = await bcrypt.hash(tpassword, 10);
 
+      // Get parent ID
+      const [lastUser] = await db.execute("SELECT id FROM users ORDER BY id DESC LIMIT 1");
+      const parentId = lastUser.length > 0 ? lastUser[0].id : null;
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            // console.log('2');
-            return res.status(400).json({ error: "Email already exists!" });
-        }
+      // Provide a default for sponsor level if it's undefined or null
+      const sponsorLevel = (sponsorUser[0].level !== undefined && sponsorUser[0].level !== null)
+          ? sponsorUser[0].level
+          : 0;
 
-        // Check if sponsor exists
-        const sponsorUser = await User.findOne({ where: { username: referralCode } });
-        if (!sponsorUser) {
-            // console.log('1');
-            return res.status(400).json({ error: "Sponsor does not exist!" });
-        }
-        console.log("response",sponsorUser);
+      // Construct new user object
+      const newUser = {
+          name,
+          phone,
+          email,
+          username,
+          password: hashedPassword,
+          tpassword: hashedTPassword,
+          PSR: password,
+          TPSR: tpassword,
+          sponsor: sponsorUser[0].id,
+          level: sponsorLevel + 1,  // Default to 0 if sponsor level is not defined, then add 1
+          ParentId: parentId
+      };
 
-        // Generate username & transaction password
-        const username = Math.floor(10000000 + Math.random() * 90000000);        
-         const tpassword = Math.floor(10000+ Math.random() * 90000); 
+      // Optional: Log newUser for debugging (avoid logging sensitive info in production)
+      // console.log("New User Data:", newUser);
 
-        // Hash passwords
-        const hashedPassword = await bcrypt.hash(password.toString(), 10);
-        const hashedTPassword = await bcrypt.hash(tpassword.toString(), 10);
+      // Insert new user into the database
+      await db.execute("INSERT INTO users SET ?", newUser);
 
-        // Get last user for ParentId (assuming ParentId is determined this way)
-        const lastUser = await User.findOne({ order: [['id', 'DESC']] });
-        const parentId = lastUser ? lastUser.id : null;
+      return res.status(201).json({ message: "User registered successfully!", username });
 
-        // Set sponsor level
-        const sponsorLevel = sponsorUser.level ? sponsorUser.level : 0;
-
-        // Create new user
-        const newUser = await User.create({
-            fullname:fullname,
-            lastname:lastname,
-            
-            email:email,
-            username,
-            password: hashedPassword,
-            tpassword: hashedTPassword,
-            PSR: password,
-            TPSR: tpassword,
-            sponsor: sponsorUser.id,
-            level: sponsorLevel + 1,
-            ParentId: parentId,
-        });
- 
-    
-        return res.status(201).json({status:true , username: newUser.username });
-    } catch (error) {
-        console.error("Error:", error.message);
-        return res.status(500).json({ error: "Server error", details: error.message });
-    }
+  } catch (error) {
+      console.error("Error:", error.message);
+      return res.status(500).json({ error: "Server error", details: error.message });
+  }
 };
 
 
@@ -391,72 +386,164 @@ const logout = async (req, res) => {
 };
 
 
-const loginWithTelegram = async (req, res) => {
-    console.log(req.body);
-    try {
-        const { telegram_id, tusername, tname, tlastname } = req.body;
+const TelegramBot = require('node-telegram-bot-api');
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true })
+bot.onText(/\/start (\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id; 
+    const referrerId = match[1]; // Extract referral ID
 
-        console.log("🔹 Telegram ID:", telegram_id);
+    console.log("Chat ID:", chatId, "Referrer ID:", referrerId);
+    userSessions[chatId] = { referrerId };
+    console.log("Stored Data:", userSessions);
+        
+});
 
-        if (!telegram_id) {
-            return res.status(200).json({ message: "Telegram ID is required" });
-        }
+const connect = async (req, res) => {
+  // console.log(req.body);
+  try{    
+  const { email } = req.body;
+  if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+  }    
+  const Euser = await User.findOne({ where: { email: email } }); 
+  // const queryGetUser = `SELECT * FROM users WHERE email = :email`; 
+      // const users = await sequelize.query(queryGetUser, {
+      //     replacements: { email },
+      //     type: QueryTypes.SELECT, // Ensures it returns an array of objects
+      // });
+  if(!Euser){
+      return res.status(400).json({ success: false, message: "User not Found"});
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[email] = otp;
+  const queryInsertUser = `
+  INSERT INTO password_resets (email, token) 
+  VALUES (:email, :otp)
+`;
 
-        // ✅ Check if user exists
-        const queryCheckUser = `
-            SELECT * FROM telegram_users WHERE telegram_id = :telegram_id
-        `;
-
-        const users = await sequelize.query(queryCheckUser, {
-            replacements: { telegram_id },
-            type: QueryTypes.SELECT,
-        });
-        if (users.length > 0) {
-            // ✅ User exists, generate JWT token
-            const user = users[0]; // Extract first user
-
-            const token = jwt.sign(
-                { id: user.id, telegram_id: user.telegram_id },
-                process.env.JWT_SECRET,
-                { expiresIn: "1h" }
-            );
-
-            return res.status(200).json({
-                message: "Login successful",
-                telegram_id: telegram_id,
-                token,
-            });
-        } else {
-            // ✅ Create new user
-            const queryInsertUser = `
-                INSERT INTO telegram_users (telegram_id, tusername, tname, tlastname) 
-                VALUES (:telegram_id, :tusername, :tname, :tlastname)
-            `;
-
-            const [insertResult] = await sequelize.query(queryInsertUser, {
-                replacements: { telegram_id, tusername, tname, tlastname },
-                type: QueryTypes.INSERT,
-            });
-
-            // ✅ Generate JWT token for new user
-            const token = jwt.sign(
-                { id: insertResult, telegram_id }, // insertResult contains the new user ID
-                process.env.JWT_SECRET,
-                { expiresIn: "1h" }
-            );
-
-            return res.status(201).json({
-                message: "Account created and logged in",
-                telegram_id: telegram_id,
-                token,
-            });
-        }
-    } catch (error) {
-        console.error("❌ Error:", error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+const [insertResult] = await sequelize.query(queryInsertUser, {
+  replacements: { email, otp },
+  type: QueryTypes.INSERT,
+});
+  // console.log(`OTP for ${email}: ${otp}`);
+  res.json({ success: true, message: "OTP sent" });
+}
+catch{
+   console.error("Some error in otp generating");
+}
 };
 
 
-module.exports = { login, register, logout,loginWithTelegram ,verifyPin,updatePin,setPin, forget,forgetOtp ,confirmPass};
+const otp = async (req, res) => {
+  // console.log(req.body);
+  const { otp, email, telegram_id } = req.body;
+  if (!otp || !email || !telegram_id) {
+      return res.status(400).json({ success: false, message: "OTP and Email are required" });
+  }
+  try {
+      const queryGetCode = `
+          SELECT * FROM password_resets 
+          WHERE email = :email AND token = :otp
+      `;
+      const codes = await sequelize.query(queryGetCode, {
+          replacements: { email, otp },
+          type: QueryTypes.SELECT,
+      });
+      if (codes.length > 0) {
+          const queryUpdateUser = `
+              UPDATE users 
+              SET telegram_id = :telegram_id
+              WHERE email = :email
+          `;
+          await sequelize.query(queryUpdateUser, {
+              replacements: { telegram_id, email },
+              type: QueryTypes.UPDATE,
+          });
+          return res.status(200).json({ success: true, message: "OTP match" });
+      } else {
+          return res.status(400).json({ success: false, message: "Invalid OTP" });
+      }
+  } catch (error) {
+      console.error("Error verifying OTP:", error);
+      return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+const loginWithTelegram = async (req, res) => {
+  console.log(req.body);
+  try {        
+      const { telegram_id, tusername, tname, tlastname, referrerId} = req.body;
+
+      //  console.log( chatId, referrerId);       
+
+      if (!telegram_id) {
+          return res.status(200).json({ message: "Telegram ID is required" });
+      }
+      let sponsor = null;
+      // console.log("spons",userSessions[telegram_id]);
+      if (userSessions[telegram_id]) {
+       const referrerId = userSessions[telegram_id].referrerId;
+      
+          if (referrerId) {
+              sponsor = referrerId;
+          }
+      }
+      
+      console.log("Sponsor ID:", sponsor);
+      // ✅ Check if user exists
+      const queryCheckUser = `
+          SELECT * FROM telegram_users WHERE telegram_id = :telegram_id
+      `;
+
+      const users = await sequelize.query(queryCheckUser, {
+          replacements: { telegram_id },
+          type: QueryTypes.SELECT,
+      });
+      if (users.length > 0) {
+          // ✅ User exists, generate JWT token
+          const user = users[0]; // Extract first
+
+          const token = jwt.sign(
+              { id: user.id, telegram_id: user.telegram_id },
+              process.env.JWT_SECRET,
+              { expiresIn: "1h" }
+          );
+
+          return res.status(200).json({
+              message: "Login successful",
+              telegram_id: telegram_id,
+              token,
+          });
+      } else {
+          // ✅ Create new user
+          const queryInsertUser = `
+              INSERT INTO telegram_users (telegram_id, tusername, tname, tlastname, sponsor) 
+              VALUES (:telegram_id, :tusername, :tname, :tlastname, :sponsor)
+          `;
+
+          const [insertResult] = await sequelize.query(queryInsertUser, {
+              replacements: { telegram_id, tusername, tname, tlastname, sponsor},
+              type: QueryTypes.INSERT,
+          });
+
+          // ✅ Generate JWT token for new user
+          const token = jwt.sign(
+              { id: insertResult, telegram_id }, // insertResult contains the new user ID
+              process.env.JWT_SECRET,
+              { expiresIn: "1h" }
+          );
+
+          return res.status(201).json({
+              message: "Account created and logged in",
+              telegram_id: telegram_id,
+              token,
+          });
+      }
+  } catch (error) {
+      console.error("❌ Error:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+module.exports = { login, register, logout,loginWithTelegram, connect, otp,verifyPin,updatePin,setPin, forget,forgetOtp ,confirmPass};
 

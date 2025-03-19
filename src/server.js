@@ -10,14 +10,23 @@ const initWebRouter = require("./routes/web");
 const { calculateRoiIncome } = require("../src/cron/cronController");
 const app = express();
 const PORT = process.env.PORT || 5000;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_WEBHOOK_URL = process.env.TELEGRAM_WEBHOOK_URL; // Your webhook URL
 
 // Security Middleware
 app.use(helmet());
 app.use(express.json());
 
 // CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
 app.use(cors({
-    origin: "http://localhost:3000", // Adjust as needed
+    origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true); // ✅ Allowed origin
+        } else {
+            callback(new Error('❌ Not allowed by CORS')); // ❌ Block unknown origins
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
@@ -56,53 +65,38 @@ app.get("/register", (req, res) => {
 });
 
 // **Telegram Webhook Route**
-// app.post("/webhook", async (req, res) => {
-//     const { message } = req.body;
+app.post("/webhook", async (req, res) => {
+    const { message } = req.body;
+      console.log(message);
+    if (message) {
+        const chatId = message.chat.id;
+        const userText = message.text;
 
-//     if (message) {
-//         const chatId = message.chat.id;
-//         const userText = message.text;
+        console.log("Received Message:", userText);
 
-//         console.log("Received Message:", userText);
+        // Send a response message back to the user
+        await sendMessage(chatId, `You said: ${userText}`);
+    }
 
-//         // Send a response message back to the user
-//         await sendMessage(chatId, `You said: ${userText}`);
-//     }
+    res.sendStatus(200); // Respond to Telegram to acknowledge receipt
+});
 
-//     res.sendStatus(200); // Respond to Telegram to acknowledge receipt
-// });
+const setWebhook = async () => {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_WEBHOOK_URL) {
+        console.error("Telegram bot token or webhook URL is missing!");
+        return;
+    }
 
-// **Function to Send Message to Telegram User**
-// const sendMessage = async (chatId, text) => {
-//     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-
-//     try {
-//         await axios.post(url, {
-//             chat_id: chatId,
-//             text: text
-//         });
-//     } catch (error) {
-//         console.error("Error sending message:", error.response?.data || error.message);
-//     }
-// };
-
-// **Set Webhook on Server Start**
-// const setWebhook = async () => {
-//     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_WEBHOOK_URL) {
-//         console.error("Telegram bot token or webhook URL is missing!");
-//         return;
-//     }
-
-//     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${TELEGRAM_WEBHOOK_URL}`;
-//     // console.log(url);
-//     // try {
-//     //     const response = await axios.post(url);
-//     //     console.log("Webhook set successfully:", response.data);
-//     // } catch (error) {
-//     //     console.error("Error setting webhook:", error.response?.data || error.message);
-//     // }
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${TELEGRAM_WEBHOOK_URL}`;
+    // console.log(url);
+    // try {
+    //     const response = await axios.post(url);
+    //     console.log("Webhook set successfully:", response.data);
+    // } catch (error) {
+    //     console.error("Error setting webhook:", error.response?.data || error.message);
+    // }
     
-// };
+};
 
 app.get("/register", (req, res) => {
     res.send({ message: "Hello, this is a test!" });
@@ -110,7 +104,7 @@ app.get("/register", (req, res) => {
 });
 
 // Set webhook when server starts
-// setWebhook();
+setWebhook();
 
 // Start Server
 app.listen(PORT, () => {

@@ -11,14 +11,14 @@ const updateUserProfile = async (req, res) => {
         
         const userId = req.user.id; 
 
-        const { username } = req.body; 
+        const { fullname } = req.body; 
 
-        if (!username) {
+        if (!fullname) {
             return res.status(400).json({ message: "user_name is required" });
         }
 
         // ✅ User ka name update karein
-        const updatedRows = await User.update({ username }, { where: { id: userId } });
+        const updatedRows = await User.update({ fullname }, { where: { id: userId } });
 
         res.json({ message: "Profile updated successfully", updatedRows });
     } catch (error) {

@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-
+const TelegramUser = require("../models/telegram"); 
 const authMiddleware = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(" ")[1]; // "Bearer TOKEN"
@@ -16,14 +16,18 @@ const authMiddleware = async (req, res, next) => {
        
         
         // User Fetch Karna
-        const user = await User.findByPk(decoded.id);
-        if (!user) {
-            return res.status(401).json({ error: "Unauthorized: User not found" });
-        }
+        const user = await User.findByPk(decoded.id);      
+        
 
-        req.user = user; // ✅ `req.user` me login user store karein
+        if (!user) {
+    return res.status(401).json({ error: "Unauthorized: User not found" });
+}
+            req.user = user;
+        
+         // ✅ `req.user` me login user store karein
         next();
     } catch (error) {
+        console.error("Authentication error:", error);
         return res.status(401).json({ error: "Invalid token", details: error.message });
     }
 };

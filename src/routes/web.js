@@ -3,6 +3,7 @@ let router = express.Router();
 const AuthController = require("../controllers/AuthController");
 const IncomeController = require("../controllers/incomeController");
 const TelegramController = require("../controllers/TelegramController");
+const teleAuthController = require("../controllers/teleAuthController");
 const InvestController = require("../controllers/InvestController");
 const withdrawController = require("../controllers/withdrawController");
 const profileController = require("../controllers/profileController");
@@ -10,6 +11,7 @@ const profileController = require("../controllers/profileController");
 const userController = require("../controllers/userController");
 
 const authMiddleware = require("../middleware/authMiddleware"); // JWT Auth Middleware
+const teleMiddleware = require("../middleware/teleMiddleware");
 const  homeController= require('../controllers/homeController');
 const passport = require('passport');
 
@@ -58,11 +60,23 @@ router.post("/authgenerate-otp",  helper.generateOtp);
 
 
 
-
+ 
 // telegram api 
-router.post('/telegram-login', AuthController.loginWithTelegram);
+router.post('/telegram-login', teleAuthController.loginWithTelegram);
 router.post('/telegram-user-detail', TelegramController.getUserByTelegramId);
+router.post('/connect', teleAuthController.connect);
+router.post('/verify-otp', teleAuthController.otp);
+router.post('/updateBalance', teleMiddleware,TelegramController.updateBalance);
+router.post('/getTasks', TelegramController.getTasks);
+router.post('/startTask', TelegramController.startTask);
+router.post('/claimTask', TelegramController.claimTask);
 
+// router.post('/connect', AuthController.otp);
+router.post('/baycoin', teleMiddleware,TelegramController.daycoin);
+router.post('/claim-day', teleMiddleware,TelegramController.claimday);
+router.post('/claim-reward',teleMiddleware,TelegramController.claimtoday);
+router.post('/fatchPoint',teleMiddleware,TelegramController.fatchpoint);
+router.post('/fatchBalance', teleMiddleware,TelegramController.fatchBalance);
 
 
 
